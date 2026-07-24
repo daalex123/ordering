@@ -72,13 +72,17 @@ export async function POST(req: Request) {
     const codeHash = hashOtp(phone, code);
     const expiresAt = otpExpiresAt();
 
-    const { error: insertError } = await admin.from("otp_challenges").insert({
-      phone,
-      code_hash: codeHash,
-      expires_at: expiresAt.toISOString(),
-    });
+    const { data: inserted, error: insertError } = await admin
+      .from("otp_challenges")
+      .insert({
+        phone,
+        code_hash: codeHash,
+        expires_at: expiresAt.toISOString(),
+      })
+      .select("id")
+      .single();
 
-    if (insertError) {
+    if (insertError || !inserted) {
       console.error("otp insert", insertError);
       return NextResponse.json(
         { error: "Could not start verification. Try again." },
@@ -86,18 +90,27 @@ export async function POST(req: Request) {
       );
     }
 
-    await sendTextBeeSms(
-      [phone],
-      `Kings Bakamuna code: ${code}. Valid for 5 minutes.`,
-    );
+    try {
+      const smsResult = await sendTextBeeSms(
+        [phone],
+        `Kings Bakamuna code: ${code}. Valid for 5 minutes.`,
+      );
 
-    return NextResponse.json({
-      ok: true,
-      phone,
-      masked: maskPhone(phone),
-      expiresInSec: 300,
-      resendAfterSec: Math.ceil(RESEND_COOLDOWN_MS / 1000),
-    });
+      return NextResponse.json({
+        ok: true,
+        phone,
+        masked: maskPhone(phone),
+        sentTo: smsResult.recipients[0],
+        expiresInSec: 300,
+        resendAfterSec: Math.ceil(RESEND_COOLDOWN_MS / 1000),
+      });
+    } catch (smsErr) {
+      await admin
+        .from("otp_challenges")
+        .update({ consumed_at: new Date().toISOString() })
+        .eq("id", inserted.id);
+      throw smsErr;
+    }
   } catch (err) {
     console.error("otp send", err);
     return NextResponse.json(

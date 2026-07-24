@@ -73,6 +73,7 @@ export default function AuthForm() {
       const data = (await res.json()) as {
         error?: string;
         masked?: string;
+        sentTo?: string;
         retryAfterSec?: number;
         resendAfterSec?: number;
       };
@@ -81,10 +82,10 @@ export default function AuthForm() {
         toast.error(data.error || "Could not send code");
         return;
       }
-      setMaskedPhone(data.masked || phone);
+      setMaskedPhone(data.masked || data.sentTo || phone);
       setStep("otp");
       setResendIn(data.resendAfterSec ?? 30);
-      toast.success("Code sent by SMS");
+      toast.success(`Code sent to ${data.masked || data.sentTo || "your phone"}`);
     } catch {
       toast.error("Could not send code");
     } finally {
