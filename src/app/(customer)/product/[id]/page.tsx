@@ -1,5 +1,7 @@
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronLeft, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatMoney, type Product } from "@/types/database";
 import { AddToCartButton } from "@/components/customer/add-to-cart-button";
@@ -21,34 +23,57 @@ export default async function ProductPage({
   const product = data as Product;
 
   return (
-    <div className="space-y-4">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
-        {product.image_url ? (
-          <Image
-            src={product.image_url}
-            alt={product.name}
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground">
-            No photo
+    <div className="flex flex-col">
+      <div className="relative bg-[var(--yum-yellow)] px-4 pt-4 pb-10">
+        <Link
+          href="/"
+          className="absolute top-5 left-4 z-10 text-primary"
+          aria-label="Back"
+        >
+          <ChevronLeft className="size-6" strokeWidth={2.5} />
+        </Link>
+        <div className="relative mx-auto mt-6 aspect-square max-w-[280px] overflow-hidden rounded-[30px] bg-white/30 shadow-lg">
+          {product.image_url ? (
+            <Image
+              src={product.image_url}
+              alt={product.name}
+              fill
+              className="object-cover"
+              unoptimized
+              priority
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              No photo
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="-mt-6 space-y-4 rounded-t-[30px] bg-white px-5 pt-6 pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl font-bold text-[var(--yum-ink)]">
+                {product.name}
+              </h1>
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-white">
+                <Star className="size-3 fill-white" />
+                4.7
+              </span>
+            </div>
+            {product.description ? (
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {product.description}
+              </p>
+            ) : null}
           </div>
-        )}
-      </div>
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">{product.name}</h1>
-        <p className="text-lg font-semibold text-primary">
-          {formatMoney(Number(product.price))}
-        </p>
-        {product.description ? (
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {product.description}
+          <p className="shrink-0 text-xl font-bold text-primary">
+            {formatMoney(Number(product.price))}
           </p>
-        ) : null}
+        </div>
+        <AddToCartButton product={product} />
       </div>
-      <AddToCartButton product={product} />
     </div>
   );
 }

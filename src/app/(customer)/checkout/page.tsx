@@ -11,7 +11,6 @@ import {
   type PaymentMethod,
   type RestaurantSettings,
 } from "@/types/database";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CustomerPageHeader } from "@/components/customer/customer-page-header";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -76,11 +76,18 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="py-16 text-center">
-        <p className="font-medium">Cart is empty</p>
-        <Button className="mt-4" onClick={() => router.push("/")}>
-          Browse menu
-        </Button>
+      <div>
+        <CustomerPageHeader title="Checkout" backHref="/cart" />
+        <div className="-mt-4 rounded-t-[30px] bg-white px-5 py-16 text-center">
+          <p className="font-medium text-[var(--yum-ink)]">Cart is empty</p>
+          <button
+            type="button"
+            className="mt-4 rounded-full bg-primary px-8 py-3 font-semibold text-white"
+            onClick={() => router.push("/")}
+          >
+            Browse menu
+          </button>
+        </div>
       </div>
     );
   }
@@ -190,129 +197,148 @@ export default function CheckoutPage() {
   }
 
   return (
-    <form onSubmit={placeOrder} className="space-y-5">
-      <h1 className="text-2xl font-bold">Checkout</h1>
-
-      <div className="space-y-2">
-        <Label>Fulfillment</Label>
-        <Select
-          value={fulfillment}
-          onValueChange={(v) => {
-            if (v) setFulfillment(v as FulfillmentType);
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="pickup">Pickup</SelectItem>
-            {settings?.delivery_enabled ? (
-              <SelectItem value="delivery">Delivery</SelectItem>
-            ) : null}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid gap-3">
+    <div>
+      <CustomerPageHeader title="Checkout" backHref="/cart" />
+      <form
+        onSubmit={placeOrder}
+        className="-mt-4 space-y-5 rounded-t-[30px] bg-white px-5 pt-6 pb-8"
+      >
         <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <Label className="font-semibold text-[var(--yum-ink)]">
+            Fulfillment
+          </Label>
+          <Select
+            value={fulfillment}
+            onValueChange={(v) => {
+              if (v) setFulfillment(v as FulfillmentType);
+            }}
+          >
+            <SelectTrigger className="rounded-2xl border-0 bg-[var(--yum-cream)]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pickup">Pickup</SelectItem>
+              {settings?.delivery_enabled ? (
+                <SelectItem value="delivery">Delivery</SelectItem>
+              ) : null}
+            </SelectContent>
+          </Select>
         </div>
+
+        <div className="grid gap-3">
+          <Field label="Name">
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+            />
+          </Field>
+          <Field label="Phone *">
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+            />
+          </Field>
+        </div>
+
+        {fulfillment === "delivery" ? (
+          <div className="grid gap-3 rounded-[24px] bg-[var(--yum-peach)]/50 p-4">
+            <Field label="Address line 1 *">
+              <Input
+                value={line1}
+                onChange={(e) => setLine1(e.target.value)}
+                required
+                className="rounded-2xl border-0 bg-white"
+              />
+            </Field>
+            <Field label="Address line 2">
+              <Input
+                value={line2}
+                onChange={(e) => setLine2(e.target.value)}
+                className="rounded-2xl border-0 bg-white"
+              />
+            </Field>
+            <Field label="City *">
+              <Input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                required
+                className="rounded-2xl border-0 bg-white"
+              />
+            </Field>
+          </div>
+        ) : null}
+
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone *</Label>
-          <Input
-            id="phone"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
+          <Label className="font-semibold text-[var(--yum-ink)]">Payment</Label>
+          <Select
+            value={payment}
+            onValueChange={(v) => {
+              if (v) setPayment(v as PaymentMethod);
+            }}
+          >
+            <SelectTrigger className="rounded-2xl border-0 bg-[var(--yum-cream)]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {fulfillment === "delivery" ? (
+                <SelectItem value="cod">Cash on delivery</SelectItem>
+              ) : (
+                <SelectItem value="pay_at_pickup">Pay at pickup</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Field label="Order notes">
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            className="rounded-2xl border-0 bg-[var(--yum-cream)]"
           />
-        </div>
-      </div>
+        </Field>
 
-      {fulfillment === "delivery" ? (
-        <div className="grid gap-3 rounded-xl border p-3">
-          <div className="space-y-2">
-            <Label htmlFor="line1">Address line 1 *</Label>
-            <Input
-              id="line1"
-              value={line1}
-              onChange={(e) => setLine1(e.target.value)}
-              required
-            />
+        <div className="space-y-2 rounded-[24px] bg-primary p-4 text-sm text-white">
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <span>{formatMoney(cartSubtotal)}</span>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="line2">Address line 2</Label>
-            <Input
-              id="line2"
-              value={line2}
-              onChange={(e) => setLine2(e.target.value)}
-            />
+          <div className="flex justify-between">
+            <span>Delivery</span>
+            <span>{formatMoney(deliveryFee)}</span>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="city">City *</Label>
-            <Input
-              id="city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              required
-            />
+          <div className="flex justify-between border-t border-dashed border-white/40 pt-2 text-base font-bold">
+            <span>Total</span>
+            <span>{formatMoney(total)}</span>
           </div>
         </div>
-      ) : null}
 
-      <div className="space-y-2">
-        <Label>Payment</Label>
-        <Select
-          value={payment}
-          onValueChange={(v) => {
-            if (v) setPayment(v as PaymentMethod);
-          }}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-full bg-[var(--yum-yellow)] py-3.5 text-base font-semibold text-primary disabled:opacity-60"
         >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {fulfillment === "delivery" ? (
-              <SelectItem value="cod">Cash on delivery</SelectItem>
-            ) : (
-              <SelectItem value="pay_at_pickup">Pay at pickup</SelectItem>
-            )}
-          </SelectContent>
-        </Select>
-      </div>
+          {loading ? "Placing order..." : "Place order"}
+        </button>
+      </form>
+    </div>
+  );
+}
 
-      <div className="space-y-2">
-        <Label htmlFor="notes">Order notes</Label>
-        <Textarea
-          id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={2}
-        />
-      </div>
-
-      <div className="space-y-1 rounded-xl border p-4 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Subtotal</span>
-          <span>{formatMoney(cartSubtotal)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Delivery</span>
-          <span>{formatMoney(deliveryFee)}</span>
-        </div>
-        <div className="flex justify-between border-t pt-2 text-base font-semibold">
-          <span>Total</span>
-          <span>{formatMoney(total)}</span>
-        </div>
-      </div>
-
-      <Button type="submit" className="w-full" size="lg" disabled={loading}>
-        {loading ? "Placing order..." : "Place order"}
-      </Button>
-    </form>
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label className="font-semibold text-[var(--yum-ink)]">{label}</Label>
+      {children}
+    </div>
   );
 }

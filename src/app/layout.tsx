@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { League_Spartan, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { SerwistProvider } from "@serwist/next/react";
 import { BrandingProvider } from "@/components/branding-provider";
@@ -8,9 +8,10 @@ import { getBranding } from "@/lib/branding";
 import type { RestaurantSettings } from "@/types/database";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const leagueSpartan = League_Spartan({
+  variable: "--font-league-spartan",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -84,9 +85,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${leagueSpartan.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col font-sans">
+      <body className="flex min-h-full flex-col bg-[var(--yum-sheet)] font-sans text-[var(--yum-ink)]">
         <SerwistProvider swUrl="/sw.js">
           <BrandingProvider>
             {children}

@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Plus } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import { toast } from "sonner";
 import type { Product } from "@/types/database";
 import { formatMoney } from "@/types/database";
 import { useCart } from "@/lib/cart-store";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  variant = "list",
+}: {
+  product: Product;
+  variant?: "list" | "seller" | "recommend";
+}) {
   const addItem = useCart((s) => s.addItem);
 
   function handleAdd(e: React.MouseEvent) {
@@ -24,17 +28,49 @@ export function ProductCard({ product }: { product: Product }) {
     toast.success(`${product.name} added to cart`);
   }
 
-  return (
-    <Link href={`/product/${product.id}`}>
-      <Card className="overflow-hidden transition-shadow hover:shadow-md">
-        <div className="relative aspect-[16/10] bg-muted">
+  if (variant === "seller") {
+    return (
+      <Link
+        href={`/product/${product.id}`}
+        className="relative w-[72px] shrink-0 snap-start"
+      >
+        <div className="relative aspect-[72/108] overflow-hidden rounded-[19px] bg-[#FFDECF]">
           {product.image_url ? (
             <Image
               src={product.image_url}
               alt={product.name}
               fill
               className="object-cover"
-              sizes="(max-width: 640px) 100vw, 320px"
+              sizes="72px"
+              unoptimized
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">
+              No photo
+            </div>
+          )}
+          <span className="absolute right-0 bottom-2 rounded-l-full bg-[#E95322] px-2 py-0.5 text-[11px] font-medium text-white">
+            {formatMoney(Number(product.price))}
+          </span>
+        </div>
+      </Link>
+    );
+  }
+
+  if (variant === "recommend") {
+    return (
+      <Link
+        href={`/product/${product.id}`}
+        className="relative block overflow-hidden rounded-[20px] bg-[#FFDECF]"
+      >
+        <div className="relative aspect-[159/140]">
+          {product.image_url ? (
+            <Image
+              src={product.image_url}
+              alt={product.name}
+              fill
+              className="object-cover"
+              sizes="160px"
               unoptimized
             />
           ) : (
@@ -42,29 +78,80 @@ export function ProductCard({ product }: { product: Product }) {
               No photo
             </div>
           )}
+          <span className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-[#391713]">
+            <Star className="size-2.5 fill-[#F4BA1B] text-[#F4BA1B]" />
+            5.0
+          </span>
+          <span className="absolute right-0 bottom-3 rounded-l-full bg-[#E95322] px-2.5 py-0.5 text-[11px] font-medium text-white">
+            {formatMoney(Number(product.price))}
+          </span>
         </div>
-        <CardContent className="flex items-start justify-between gap-2 p-3">
-          <div className="min-w-0">
-            <h3 className="truncate font-medium">{product.name}</h3>
-            {product.description ? (
-              <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-                {product.description}
-              </p>
-            ) : null}
-            <p className="mt-1.5 text-sm font-semibold text-primary">
-              {formatMoney(Number(product.price))}
-            </p>
-          </div>
-          <Button
-            size="icon"
-            className="shrink-0 rounded-full"
+      </Link>
+    );
+  }
+
+  // Figma Food/Snacks list card
+  return (
+    <article className="space-y-2.5">
+      <Link href={`/product/${product.id}`} className="block">
+        <div className="relative aspect-[323/174] overflow-hidden rounded-[36px] bg-[#FFDECF]">
+          {product.image_url ? (
+            <Image
+              src={product.image_url}
+              alt={product.name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, 360px"
+              unoptimized
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+              No photo
+            </div>
+          )}
+          <span className="absolute top-3 right-3 size-5 overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/yumquick/heart-on.svg"
+              alt=""
+              width={20}
+              height={20}
+              className="size-full object-contain"
+            />
+          </span>
+          <button
+            type="button"
             onClick={handleAdd}
+            className="absolute right-3 bottom-3 flex size-9 items-center justify-center rounded-full bg-[#E95322] text-white shadow-md"
             aria-label={`Add ${product.name}`}
           >
-            <Plus className="size-4" />
-          </Button>
-        </CardContent>
-      </Card>
-    </Link>
+            <Plus className="size-5" />
+          </button>
+        </div>
+      </Link>
+      <div className="flex items-start justify-between gap-2 px-0.5">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={`/product/${product.id}`}>
+              <h3 className="text-[18px] font-semibold capitalize leading-tight text-[#391713]">
+                {product.name}
+              </h3>
+            </Link>
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-[#E95322] px-2 py-0.5 text-[12px] font-normal text-[#F5F5F5]">
+              5.0
+              <Star className="size-2.5 fill-[#F4BA1B] text-[#F4BA1B]" />
+            </span>
+          </div>
+          {product.description ? (
+            <p className="mt-1 line-clamp-2 text-[12px] font-light leading-normal text-[#391713]">
+              {product.description}
+            </p>
+          ) : null}
+        </div>
+        <p className="shrink-0 text-[18px] font-normal capitalize text-[#E95322]">
+          {formatMoney(Number(product.price))}
+        </p>
+      </div>
+    </article>
   );
 }

@@ -55,12 +55,12 @@ export type RestaurantSettings = {
 export const DEFAULT_BRANDING = {
   logo_url: null as string | null,
   favicon_url: null as string | null,
-  tagline: "Order food for pickup or delivery",
-  primary_color: "#c2410c",
+  tagline: "Rise and shine! It's breakfast time",
+  primary_color: "#E95322",
   primary_foreground: "#ffffff",
-  accent_color: "#f97316",
-  background_color: "#ffffff",
-  surface_color: "#fff7ed",
+  accent_color: "#F5CB58",
+  background_color: "#F5F5F5",
+  surface_color: "#FFDECF",
 };
 
 export type Category = {

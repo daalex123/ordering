@@ -4,19 +4,21 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CustomerPageHeader } from "@/components/customer/customer-page-header";
+import { cn } from "@/lib/utils";
 
 export default function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/";
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
@@ -56,83 +58,101 @@ export default function AuthForm() {
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-6 py-8">
-      <div className="space-y-1 text-center">
-        <h1 className="text-2xl font-bold">Sign in</h1>
-        <p className="text-sm text-muted-foreground">
-          Save your orders and track them live
-        </p>
-      </div>
-      <Tabs defaultValue="signin">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="signin">Sign in</TabsTrigger>
-          <TabsTrigger value="signup">Sign up</TabsTrigger>
-        </TabsList>
-        <TabsContent value="signin">
-          <form onSubmit={signIn} className="mt-4 space-y-3">
+    <div>
+      <CustomerPageHeader
+        title={mode === "signin" ? "Log In" : "Sign Up"}
+        backHref="/"
+      />
+      <div className="-mt-4 rounded-t-[30px] bg-white px-6 pt-7 pb-10">
+        <div className="mb-6 space-y-2">
+          <h2 className="text-[28px] font-bold text-[var(--yum-ink)]">
+            {mode === "signin" ? "Welcome" : "Create account"}
+          </h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {mode === "signin"
+              ? "Sign in to track orders and save your delivery details."
+              : "Join us to place orders and get live updates."}
+          </p>
+        </div>
+
+        <form
+          onSubmit={mode === "signin" ? signIn : signUp}
+          className="space-y-4"
+        >
+          {mode === "signup" ? (
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label className="font-semibold text-[var(--yum-ink)]">
+                Full name
+              </Label>
               <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
-            </Button>
-          </form>
-        </TabsContent>
-        <TabsContent value="signup">
-          <form onSubmit={signUp} className="mt-4 space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full name</Label>
-              <Input
-                id="fullName"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                className="h-12 rounded-2xl border-0 bg-[var(--yum-cream)]"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="signupEmail">Email</Label>
+          ) : null}
+          <div className="space-y-2">
+            <Label className="font-semibold text-[var(--yum-ink)]">
+              Email or Mobile Number
+            </Label>
+            <Input
+              type="email"
+              required
+              placeholder="example@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-12 rounded-2xl border-0 bg-[var(--yum-cream)]"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="font-semibold text-[var(--yum-ink)]">
+              Password
+            </Label>
+            <div className="relative">
               <Input
-                id="signupEmail"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="signupPassword">Password</Label>
-              <Input
-                id="signupPassword"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="h-12 rounded-2xl border-0 bg-[var(--yum-cream)] pr-12"
               />
+              <button
+                type="button"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-primary"
+                onClick={() => setShowPassword((v) => !v)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating..." : "Create account"}
-            </Button>
-          </form>
-        </TabsContent>
-      </Tabs>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-2 w-full rounded-full bg-primary py-3.5 text-base font-semibold text-white disabled:opacity-60"
+          >
+            {loading
+              ? mode === "signin"
+                ? "Signing in..."
+                : "Creating..."
+              : mode === "signin"
+                ? "Log In"
+                : "Sign Up"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-[var(--yum-ink)]">
+          {mode === "signin" ? "Don't have an account? " : "Already registered? "}
+          <button
+            type="button"
+            className={cn("font-bold text-primary")}
+            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+          >
+            {mode === "signin" ? "Sign Up" : "Log In"}
+          </button>
+        </p>
+      </div>
     </div>
   );
 }

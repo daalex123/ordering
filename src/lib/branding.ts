@@ -45,6 +45,9 @@ export function brandingStyleVars(branding: Branding): CSSProperties {
     ["--background" as string]: branding.background_color,
     ["--brand-accent" as string]: branding.accent_color,
     ["--brand-surface" as string]: branding.surface_color,
+    ["--yum-orange" as string]: branding.primary_color,
+    // Keep kit yellow as the header accent; primary brand color drives CTAs/nav.
+    ["--yum-peach" as string]: branding.surface_color,
   };
 }
 
