@@ -37,6 +37,8 @@ async function loadBranding() {
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await loadBranding();
+  // Favicon / PWA home-screen icons use the Kings Bakamuna logo
+  // (`public/logo-kings-bakamuna.png` → `public/icons/icon-*.png` + manifest).
   const icon = branding.favicon_url || branding.logo_url;
   return {
     title: {
