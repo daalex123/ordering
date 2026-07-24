@@ -1,0 +1,16 @@
+---
+description: Always apply schema/SQL changes to the remote Supabase project automatically
+alwaysApply: true
+---
+
+# Remote Supabase DB sync
+
+Project: **foodies** (`nszaopfaeusqpkqhckar`)
+
+Whenever you create or change database schema, RLS, functions, triggers, seed data, or SQL under `supabase/migrations/`:
+
+1. Write a local migration file under `supabase/migrations/` (use `supabase migration new` when possible).
+2. **Immediately apply it to the remote DB** via Supabase MCP `apply_migration` (preferred) or `npx supabase db push --linked`.
+3. Keep local migration filenames/versions in sync with remote (`supabase migration list --linked`).
+4. Do not leave schema changes local-only. Do not ask the user to run migrations unless auth/network blocks you.
+5. After applying, spot-check with `execute_sql` or REST when the change affects app data access.

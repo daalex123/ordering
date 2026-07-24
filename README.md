@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Spice Route Kitchen — Food Ordering PWA
 
-## Getting Started
+Single-restaurant food ordering app with:
 
-First, run the development server:
+- **Customer PWA** — menu, cart, checkout (pickup/delivery), live order tracking, history, profile
+- **Restaurant admin** — dashboard, live order board, menu CRUD, settings
+- **Supabase** — Postgres, Auth, RLS, Realtime, Storage
+
+## Stack
+
+- Next.js 16 (App Router) + TypeScript + Tailwind + shadcn/ui
+- Supabase (`@supabase/ssr`)
+- PWA via Serwist (production builds)
+- Zustand cart (persisted)
+
+## Setup
+
+### 1. Install
+
+```bash
+npm install
+cp .env.example .env.local
+```
+
+Fill `.env.local` with your Supabase project URL and anon key.
+
+### 2. Database
+
+This app is linked to the Supabase project **foodies** (`nszaopfaeusqpkqhckar`).
+
+Migrations are already applied remotely. Local history matches:
+
+- `20260723182935_initial_schema`
+- `20260723183008_security_harden_functions`
+- `20260723183210_move_helpers_to_private_schema`
+
+To push future migrations:
+
+```bash
+npx supabase db push --linked
+```
+
+### 3. Create an admin user
+
+1. Sign up in the app (`/auth`) with your admin email.
+2. In Supabase SQL editor:
+
+```sql
+update public.profiles
+set role = 'admin'
+where id = (
+  select id from auth.users where email = 'you@example.com'
+);
+```
+
+Staff users: set `role = 'staff'`.
+
+### 4. Auth settings
+
+In Supabase Auth → Providers, enable Email. For local/dev, disable “Confirm email” so signup works immediately.
+
+### 5. Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Dev and build use webpack (`--webpack`) so Serwist PWA works with Next.js 16.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Customer app: [http://localhost:3000](http://localhost:3000)
+- Admin: [http://localhost:3000/admin](http://localhost:3000/admin) (admin/staff only)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 6. Production PWA
 
-## Learn More
+```bash
+npm run build && npm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+Serwist service worker is disabled in `next dev` (Turbopack). Installable PWA works on production builds.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Deploy the Next.js app to **Vercel** and keep Supabase as the backend. Set the same env vars in Vercel.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## App routes
 
-## Deploy on Vercel
+| Route | Description |
+|-------|-------------|
+| `/` | Menu (search + categories) |
+| `/product/[id]` | Product detail |
+| `/cart` | Cart |
+| `/checkout` | Place order |
+| `/orders` | Order history |
+| `/orders/[id]` | Live tracking |
+| `/profile` | Profile + sign out |
+| `/auth` | Sign in / sign up |
+| `/admin` | Dashboard |
+| `/admin/orders` | Live order board |
+| `/admin/menu` | Menu management |
+| `/admin/settings` | Restaurant settings |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Payments (v1)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Cash on delivery / pay at pickup only. Card payments (Stripe) are out of scope for v1.
+
+## Security notes
+
+- All tables use RLS
+- Roles live in `profiles.role` (not user metadata)
+- Role changes are blocked for non-admins via trigger
+- Never put the service role key in `NEXT_PUBLIC_*` vars
