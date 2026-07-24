@@ -53,9 +53,10 @@ export type RestaurantSettings = {
 };
 
 export const DEFAULT_BRANDING = {
-  logo_url: null as string | null,
-  favicon_url: null as string | null,
-  tagline: "Rise and shine! It's breakfast time",
+  name: "Kings Bakamuna",
+  logo_url: "/logo-kings-bakamuna.png" as string | null,
+  favicon_url: "/logo-kings-bakamuna.png" as string | null,
+  tagline: "Restaurant & Billiards",
   primary_color: "#E95322",
   primary_foreground: "#ffffff",
   accent_color: "#F5CB58",

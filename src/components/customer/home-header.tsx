@@ -12,11 +12,15 @@ export function HomeHeader({
   tagline,
   initialQuery,
   compact = false,
+  logoUrl,
+  restaurantName,
 }: {
   greeting?: string;
   tagline?: string;
   initialQuery: string;
   compact?: boolean;
+  logoUrl?: string | null;
+  restaurantName?: string;
 }) {
   const router = useRouter();
   const [q, setQ] = useState(initialQuery);
@@ -34,6 +38,29 @@ export function HomeHeader({
 
   return (
     <header className={cn("bg-[#F5CB58] px-5 pt-3", compact ? "pb-4" : "pb-5")}>
+      {!compact ? (
+        <div className="mb-3 flex items-center gap-2.5">
+          <Image
+            src={logoUrl || "/logo-kings-bakamuna.png"}
+            alt={restaurantName || "Kings Bakamuna"}
+            width={40}
+            height={40}
+            className="size-10 shrink-0 rounded-xl object-cover"
+            unoptimized
+            priority
+          />
+          <div className="min-w-0">
+            <p className="truncate text-[16px] font-bold leading-tight text-[#391713]">
+              {restaurantName || "Kings Bakamuna"}
+            </p>
+            {tagline ? (
+              <p className="truncate text-[11px] font-medium text-[#E95322]">
+                {tagline}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       <div className="flex items-center gap-2">
         <form onSubmit={submit} className="relative min-w-0 flex-1">
           <input
@@ -66,11 +93,6 @@ export function HomeHeader({
           <h1 className="text-[30px] font-bold capitalize leading-none tracking-tight text-[#F8F8F8]">
             {greeting}
           </h1>
-          {tagline ? (
-            <p className="text-[13px] font-medium capitalize text-[#E95322]">
-              {tagline}
-            </p>
-          ) : null}
         </div>
       ) : null}
     </header>

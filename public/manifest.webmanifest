@@ -1,11 +1,11 @@
 {
-  "name": "Spice Route Kitchen",
-  "short_name": "SpiceRoute",
-  "description": "Order food for pickup or delivery",
-  "start_url": "/",
+  "name": "Kings Bakamuna",
+  "short_name": "Bakamuna",
+  "description": "Restaurant & Billiards — order for pickup or delivery",
+  "start_url": "/launch",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#c2410c",
+  "background_color": "#F5CB58",
+  "theme_color": "#E95322",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -18,7 +18,7 @@ export function getBranding(
   settings: Partial<RestaurantSettings> | null | undefined,
 ): Branding {
   return {
-    name: settings?.name?.trim() || "Restaurant",
+    name: settings?.name?.trim() || DEFAULT_BRANDING.name,
     logo_url: settings?.logo_url ?? DEFAULT_BRANDING.logo_url,
     favicon_url: settings?.favicon_url ?? DEFAULT_BRANDING.favicon_url,
     tagline: settings?.tagline?.trim() || DEFAULT_BRANDING.tagline,

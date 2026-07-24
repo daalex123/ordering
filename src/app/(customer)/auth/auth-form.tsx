@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -9,16 +9,39 @@ import { Label } from "@/components/ui/label";
 import { CustomerPageHeader } from "@/components/customer/customer-page-header";
 import { cn } from "@/lib/utils";
 
+function safeNextPath(raw: string | null): string {
+  // Only allow same-origin relative paths (blocks //evil.com open redirects).
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/auth")) {
+    return "/";
+  }
+  // Profile is just the login entry point — land on home after auth.
+  if (raw === "/profile" || raw.startsWith("/profile/")) {
+    return "/";
+  }
+  return raw;
+}
+
 export default function AuthForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/";
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const next = safeNextPath(searchParams.get("next"));
+  const initialMode =
+    searchParams.get("mode") === "signup" ? "signup" : "signin";
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  function goAfterAuth(path: string) {
+    try {
+      window.localStorage.setItem("kb_onboarded", "1");
+    } catch {
+      /* ignore */
+    }
+    // Hard navigation so the session cookie is present on the next document request.
+    window.location.assign(path);
+  }
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
@@ -28,14 +51,13 @@ export default function AuthForm() {
       email,
       password,
     });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast.error(error.message);
       return;
     }
     toast.success("Welcome back");
-    router.push(next);
-    router.refresh();
+    goAfterAuth(next);
   }
 
   async function signUp(e: React.FormEvent) {
@@ -47,14 +69,13 @@ export default function AuthForm() {
       password,
       options: { data: { full_name: fullName } },
     });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast.error(error.message);
       return;
     }
     toast.success("Account created — you can order now");
-    router.push(next);
-    router.refresh();
+    goAfterAuth(next);
   }
 
   return (

@@ -1,6 +1,27 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function redirectWithCookies(
+  request: NextRequest,
+  pathname: string,
+  supabaseResponse: NextResponse,
+  searchParams?: Record<string, string>,
+) {
+  const redirectUrl = request.nextUrl.clone();
+  redirectUrl.pathname = pathname;
+  redirectUrl.search = "";
+  if (searchParams) {
+    for (const [key, value] of Object.entries(searchParams)) {
+      redirectUrl.searchParams.set(key, value);
+    }
+  }
+  const response = NextResponse.redirect(redirectUrl);
+  supabaseResponse.cookies.getAll().forEach((cookie) => {
+    response.cookies.set(cookie.name, cookie.value);
+  });
+  return response;
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -42,10 +63,26 @@ export async function updateSession(request: NextRequest) {
     isAdminRoute;
 
   if (!user && needsAuth && !isAuthRoute) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/auth";
-    redirectUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(redirectUrl);
+    return redirectWithCookies(request, "/auth", supabaseResponse, {
+      next: pathname,
+    });
+  }
+
+  // Already signed in — leave the auth screen (honor safe ?next= or go home).
+  if (user && isAuthRoute) {
+    const rawNext = request.nextUrl.searchParams.get("next");
+    let nextPath = "/";
+    if (
+      rawNext &&
+      rawNext.startsWith("/") &&
+      !rawNext.startsWith("//") &&
+      !rawNext.startsWith("/auth") &&
+      rawNext !== "/profile" &&
+      !rawNext.startsWith("/profile/")
+    ) {
+      nextPath = rawNext.split("?")[0] || "/";
+    }
+    return redirectWithCookies(request, nextPath, supabaseResponse);
   }
 
   if (user && isAdminRoute) {
@@ -56,9 +93,7 @@ export async function updateSession(request: NextRequest) {
       .maybeSingle();
 
     if (!profile || !["admin", "staff"].includes(profile.role)) {
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/";
-      return NextResponse.redirect(redirectUrl);
+      return redirectWithCookies(request, "/", supabaseResponse);
     }
   }
 

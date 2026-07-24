@@ -12,7 +12,21 @@ const CATEGORY_ICONS = [
   "/yumquick/cat-vegan.svg",
   "/yumquick/cat-dessert.svg",
   "/yumquick/cat-drinks.svg",
-];
+] as const;
+
+/** Match Figma Bot-menu icons by category name (not list index). */
+function iconForCategory(name: string, index: number): string {
+  const n = name.toLowerCase();
+  if (/snack|starter|appetizer|side/.test(n)) return "/yumquick/cat-snacks.svg";
+  if (/meal|main|entree|entrée|food/.test(n)) return "/yumquick/cat-meal.svg";
+  if (/vegan|veggie|vegetarian|salad|plant/.test(n))
+    return "/yumquick/cat-vegan.svg";
+  if (/dessert|sweet|cake|bakery|pastry/.test(n))
+    return "/yumquick/cat-dessert.svg";
+  if (/drink|beverage|juice|coffee|tea|cocktail/.test(n))
+    return "/yumquick/cat-drinks.svg";
+  return CATEGORY_ICONS[index % CATEGORY_ICONS.length];
+}
 
 function greetingForHour(hour: number) {
   if (hour < 12) return "Good Morning";
@@ -72,7 +86,7 @@ export default async function MenuPage({
     id: cat.id,
     label: cat.name,
     href: `/?category=${cat.id}`,
-    icon: CATEGORY_ICONS[i % CATEGORY_ICONS.length],
+    icon: iconForCategory(cat.name, i),
   }));
 
   const browseChips = [
@@ -80,7 +94,7 @@ export default async function MenuPage({
       id: null as string | null,
       label: "All",
       href: "/",
-      icon: CATEGORY_ICONS[0],
+      icon: "/yumquick/cat-snacks.svg",
     },
     ...homeChips.map((c) => ({ ...c, id: c.id as string | null })),
   ];
@@ -104,6 +118,8 @@ export default async function MenuPage({
         greeting={greetingForHour(hour)}
         tagline={restaurant?.eta_text || branding.tagline}
         initialQuery={params.q ?? ""}
+        logoUrl={branding.logo_url}
+        restaurantName={branding.name}
       />
 
       <div className="relative z-10 -mt-1 flex flex-1 flex-col rounded-t-[30px] bg-[#F5F5F5] px-5 pt-5 pb-6">
