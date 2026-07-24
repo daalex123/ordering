@@ -22,6 +22,10 @@ function redirectWithCookies(
   return response;
 }
 
+function isStaffRole(role: string | null | undefined) {
+  return role === "admin" || role === "staff";
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -54,22 +58,30 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+  const isAdminLogin = pathname === "/admin/login";
   const isAdminRoute = pathname.startsWith("/admin");
-  const isAuthRoute = pathname.startsWith("/auth");
-  const needsAuth =
+  const isCustomerAuthRoute = pathname.startsWith("/auth");
+  const needsCustomerAuth =
     pathname.startsWith("/checkout") ||
     pathname.startsWith("/orders") ||
-    pathname.startsWith("/profile") ||
-    isAdminRoute;
+    pathname.startsWith("/profile");
 
-  if (!user && needsAuth && !isAuthRoute) {
+  // Unauthenticated users hitting customer-protected pages
+  if (!user && needsCustomerAuth) {
     return redirectWithCookies(request, "/auth", supabaseResponse, {
       next: pathname,
     });
   }
 
-  // Already signed in — leave the auth screen (honor safe ?next= or go home).
-  if (user && isAuthRoute) {
+  // Unauthenticated users hitting admin (except login)
+  if (!user && isAdminRoute && !isAdminLogin) {
+    return redirectWithCookies(request, "/admin/login", supabaseResponse, {
+      next: pathname,
+    });
+  }
+
+  // Signed-in users on customer auth — honor ?next= or go home
+  if (user && isCustomerAuthRoute) {
     const rawNext = request.nextUrl.searchParams.get("next");
     let nextPath = "/";
     if (
@@ -82,18 +94,58 @@ export async function updateSession(request: NextRequest) {
     ) {
       nextPath = rawNext.split("?")[0] || "/";
     }
+
+    // Staff who opened customer auth with an admin next path
+    if (nextPath.startsWith("/admin")) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!isStaffRole(profile?.role)) {
+        nextPath = "/";
+      }
+    }
+
     return redirectWithCookies(request, nextPath, supabaseResponse);
   }
 
-  if (user && isAdminRoute) {
+  // Staff already signed in on admin login → dashboard
+  if (user && isAdminLogin) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (!profile || !["admin", "staff"].includes(profile.role)) {
-      return redirectWithCookies(request, "/", supabaseResponse);
+    if (isStaffRole(profile?.role)) {
+      const rawNext = request.nextUrl.searchParams.get("next");
+      let nextPath = "/admin";
+      if (
+        rawNext &&
+        rawNext.startsWith("/admin") &&
+        !rawNext.startsWith("//") &&
+        rawNext !== "/admin/login"
+      ) {
+        nextPath = rawNext.split("?")[0] || "/admin";
+      }
+      return redirectWithCookies(request, nextPath, supabaseResponse);
+    }
+    // Non-staff can stay on login page to switch accounts (form will reject)
+  }
+
+  // Protect admin app: must be staff/admin
+  if (user && isAdminRoute && !isAdminLogin) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!isStaffRole(profile?.role)) {
+      return redirectWithCookies(request, "/admin/login", supabaseResponse, {
+        next: pathname,
+      });
     }
   }
 

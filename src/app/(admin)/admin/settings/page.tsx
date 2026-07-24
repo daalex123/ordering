@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Store, Truck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { RestaurantSettings } from "@/types/database";
 import { DEFAULT_BRANDING } from "@/types/database";
@@ -10,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BrandingSettingsForm } from "@/components/admin/branding-settings-form";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<RestaurantSettings | null>(null);
@@ -68,18 +71,32 @@ export default function AdminSettingsPage() {
 
   if (!settings) {
     return (
-      <p className="text-sm text-muted-foreground">Loading settings...</p>
+      <div className="space-y-4">
+        <AdminPageHeader
+          title="Restaurant settings"
+          description="Store details, branding, hours, and delivery"
+        />
+        <div className="h-40 animate-pulse rounded-2xl bg-muted/60" />
+      </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Restaurant settings</h1>
-        <p className="text-sm text-muted-foreground">
-          Store details, branding, hours, and delivery
-        </p>
-      </div>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <AdminPageHeader
+        title="Restaurant settings"
+        description="Store details, branding, hours, and delivery"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Badge variant={settings.is_open ? "default" : "secondary"}>
+              {settings.is_open ? "Open now" : "Closed"}
+            </Badge>
+            <Badge variant={settings.delivery_enabled ? "secondary" : "outline"}>
+              {settings.delivery_enabled ? "Delivery on" : "Pickup only"}
+            </Badge>
+          </div>
+        }
+      />
 
       <BrandingSettingsForm
         settingsId={settings.id}
@@ -99,8 +116,22 @@ export default function AdminSettingsPage() {
         onSaved={(next) => setSettings({ ...settings, ...next })}
       />
 
-      <form onSubmit={save} className="space-y-3 rounded-xl border bg-card p-4">
-        <h2 className="text-lg font-semibold">Store details</h2>
+      <form
+        onSubmit={save}
+        className="admin-panel space-y-5 rounded-2xl p-5"
+      >
+        <div className="flex items-center gap-2 border-b pb-3">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Store className="size-4" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold">Store details</h2>
+            <p className="text-xs text-muted-foreground">
+              Contact info and operating status
+            </p>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label>Name</Label>
           <Input
@@ -109,14 +140,26 @@ export default function AdminSettingsPage() {
             required
           />
         </div>
-        <div className="space-y-2">
-          <Label>Phone</Label>
-          <Input
-            value={settings.phone ?? ""}
-            onChange={(e) =>
-              setSettings({ ...settings, phone: e.target.value })
-            }
-          />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Phone</Label>
+            <Input
+              value={settings.phone ?? ""}
+              onChange={(e) =>
+                setSettings({ ...settings, phone: e.target.value })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>ETA text</Label>
+            <Input
+              value={settings.eta_text ?? ""}
+              onChange={(e) =>
+                setSettings({ ...settings, eta_text: e.target.value })
+              }
+              placeholder="25–35 min"
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <Label>Address</Label>
@@ -127,70 +170,71 @@ export default function AdminSettingsPage() {
             }
           />
         </div>
-        <div className="space-y-2">
-          <Label>ETA text</Label>
-          <Input
-            value={settings.eta_text ?? ""}
-            onChange={(e) =>
-              setSettings({ ...settings, eta_text: e.target.value })
-            }
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label>Delivery fee</Label>
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              value={settings.delivery_fee}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  delivery_fee: Number(e.target.value),
-                })
-              }
-            />
+
+        <div className="rounded-xl border bg-muted/30 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Truck className="size-4 text-primary" />
+            <h3 className="text-sm font-semibold">Delivery</h3>
           </div>
-          <div className="space-y-2">
-            <Label>Min order</Label>
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              value={settings.min_order}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  min_order: Number(e.target.value),
-                })
-              }
-            />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Delivery fee</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={settings.delivery_fee}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    delivery_fee: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Min order</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={settings.min_order}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    min_order: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+          </div>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:gap-6">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={settings.is_open}
+                onChange={(e) =>
+                  setSettings({ ...settings, is_open: e.target.checked })
+                }
+              />
+              Restaurant is open
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={settings.delivery_enabled}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    delivery_enabled: e.target.checked,
+                  })
+                }
+              />
+              Delivery enabled
+            </label>
           </div>
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={settings.is_open}
-            onChange={(e) =>
-              setSettings({ ...settings, is_open: e.target.checked })
-            }
-          />
-          Restaurant is open
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={settings.delivery_enabled}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                delivery_enabled: e.target.checked,
-              })
-            }
-          />
-          Delivery enabled
-        </label>
+
         <div className="space-y-2">
           <Label>Hours (JSON)</Label>
           <Textarea

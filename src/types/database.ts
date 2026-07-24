@@ -88,6 +88,7 @@ export type Product = {
 
 export type Order = {
   id: string;
+  order_number: number;
   user_id: string;
   status: OrderStatus;
   fulfillment_type: FulfillmentType;

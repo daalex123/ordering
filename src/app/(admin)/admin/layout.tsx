@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { AdminNav } from "@/components/admin/admin-sidebar";
+import { AdminShell } from "@/components/admin/admin-shell";
 
 export default async function AdminLayout({
   children,
@@ -14,12 +14,11 @@ export default async function AdminLayout({
     .maybeSingle();
 
   return (
-    <div className="flex min-h-screen bg-muted/30">
-      <AdminNav
-        restaurantName={settings?.name ?? "Restaurant"}
-        logoUrl={settings?.logo_url}
-      />
-      <main className="min-w-0 flex-1 overflow-auto p-4 md:p-6">{children}</main>
-    </div>
+    <AdminShell
+      restaurantName={settings?.name ?? "Restaurant"}
+      logoUrl={settings?.logo_url}
+    >
+      {children}
+    </AdminShell>
   );
 }
