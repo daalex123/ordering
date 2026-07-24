@@ -1,0 +1,15 @@
+---
+description: Always push commits to origin in the background after committing
+alwaysApply: true
+---
+
+# Auto-push commits
+
+Whenever you create a git commit (because the user asked to commit, or as part of finishing work they requested to commit):
+
+1. **Immediately push** to `origin` for the current branch after a successful commit.
+2. Run the push **in the background** (`block_until_ms: 0` on the Shell tool) so it does not block follow-up work; check the result when needed.
+3. Do **not** ask for confirmation to push — pushing after commit is the default for this project.
+4. Authenticate for this private repo as needed (HTTPS with a valid `daalex123` credential/PAT). Never store PATs in `.git/config` or commit them.
+5. After push completes, confirm `git status -sb` shows the branch in sync with `origin` (update remote-tracking refs if you pushed via an authenticated URL).
+6. Still follow the user's committing-changes rules: only commit when the user asks; never force-push to main/master unless explicitly requested.
