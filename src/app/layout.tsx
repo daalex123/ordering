@@ -94,7 +94,10 @@ export default function RootLayout({
       className={`${leagueSpartan.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-[var(--yum-sheet)] font-sans text-[var(--yum-ink)]">
-        <SerwistProvider swUrl="/sw.js">
+        <SerwistProvider
+          swUrl="/sw.js"
+          disable={process.env.NODE_ENV === "development"}
+        >
           <BrandingProvider>
             {children}
             <Toaster richColors position="top-center" />
