@@ -54,6 +54,8 @@ const EMPTY_FORM = {
   category_id: "",
   image_url: "",
   is_available: true,
+  is_best_seller: false,
+  is_recommended: false,
 };
 
 export default function AdminMenuPage() {
@@ -140,6 +142,8 @@ export default function AdminMenuPage() {
       category_id: product.category_id,
       image_url: product.image_url ?? "",
       is_available: product.is_available,
+      is_best_seller: product.is_best_seller,
+      is_recommended: product.is_recommended,
     });
     setPortions(
       (product.product_portions ?? []).map((p) => ({
@@ -257,6 +261,8 @@ export default function AdminMenuPage() {
       category_id: form.category_id,
       image_url: form.image_url.trim() || null,
       is_available: form.is_available,
+      is_best_seller: form.is_best_seller,
+      is_recommended: form.is_recommended,
     };
 
     setSaving(true);
@@ -586,16 +592,42 @@ export default function AdminMenuPage() {
                   )}
                 </div>
 
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.is_available}
-                    onChange={(e) =>
-                      setForm({ ...form, is_available: e.target.checked })
-                    }
-                  />
-                  Available on the menu
-                </label>
+                <div className="space-y-2 rounded-2xl border bg-muted/20 p-3">
+                  <p className="text-sm font-semibold">Home page placement</p>
+                  <p className="text-xs text-muted-foreground">
+                    Control which products appear in Best Seller and Recommend
+                  </p>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={form.is_best_seller}
+                      onChange={(e) =>
+                        setForm({ ...form, is_best_seller: e.target.checked })
+                      }
+                    />
+                    Best seller
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={form.is_recommended}
+                      onChange={(e) =>
+                        setForm({ ...form, is_recommended: e.target.checked })
+                      }
+                    />
+                    Recommended
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={form.is_available}
+                      onChange={(e) =>
+                        setForm({ ...form, is_available: e.target.checked })
+                      }
+                    />
+                    Available on the menu
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -711,6 +743,12 @@ export default function AdminMenuPage() {
                         </div>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
+                        {product.is_best_seller ? (
+                          <Badge variant="secondary">Best seller</Badge>
+                        ) : null}
+                        {product.is_recommended ? (
+                          <Badge variant="secondary">Recommended</Badge>
+                        ) : null}
                         <Badge
                           variant={
                             product.is_available ? "default" : "secondary"

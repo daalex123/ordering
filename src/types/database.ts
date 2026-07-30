@@ -81,6 +81,8 @@ export type Product = {
   price: number;
   image_url: string | null;
   is_available: boolean;
+  is_best_seller: boolean;
+  is_recommended: boolean;
   sort_order: number;
   created_at: string;
   updated_at: string;

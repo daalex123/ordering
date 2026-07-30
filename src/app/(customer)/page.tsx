@@ -81,8 +81,8 @@ export default async function MenuPage({
 
   const categorySelected = Boolean(params.category);
   const hour = new Date().getHours();
-  const bestSellers = allItems.slice(0, 8);
-  const recommended = allItems.slice().reverse().slice(0, 2);
+  const bestSellers = allItems.filter((p) => p.is_best_seller);
+  const recommended = allItems.filter((p) => p.is_recommended);
   const viewAllHref = cats[0] ? `/?category=${cats[0].id}` : "/";
 
   // Category chips — home uses real categories (no "All" tab), selected uses All + cats
@@ -164,31 +164,33 @@ export default async function MenuPage({
         <div className="mb-4 h-px w-full bg-[#FFD8C7]" />
 
         {/* Best Seller */}
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[20px] font-medium text-[#391713]">
-              Best Seller
-            </h2>
-            <Link
-              href={viewAllHref}
-              className="flex items-center gap-1 text-[12px] font-semibold capitalize text-[#E95322]"
-            >
-              View All
-              <span aria-hidden className="text-sm">
-                ›
-              </span>
-            </Link>
-          </div>
-          <div className="flex snap-x gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {bestSellers.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                variant="seller"
-              />
-            ))}
-          </div>
-        </section>
+        {bestSellers.length > 0 ? (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[20px] font-medium text-[#391713]">
+                Best Seller
+              </h2>
+              <Link
+                href={viewAllHref}
+                className="flex items-center gap-1 text-[12px] font-semibold capitalize text-[#E95322]"
+              >
+                View All
+                <span aria-hidden className="text-sm">
+                  ›
+                </span>
+              </Link>
+            </div>
+            <div className="flex snap-x gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {bestSellers.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  variant="seller"
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {/* Promo banner */}
         <div className="relative mt-5 overflow-hidden rounded-[20px] bg-[#E95322] shadow-[0_4px_4px_rgba(215,215,215,1)]">
@@ -216,18 +218,20 @@ export default async function MenuPage({
         </div>
 
         {/* Recommend */}
-        <section className="mt-5 space-y-3">
-          <h2 className="text-[20px] font-medium text-[#391713]">Recommend</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {recommended.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                variant="recommend"
-              />
-            ))}
-          </div>
-        </section>
+        {recommended.length > 0 ? (
+          <section className="mt-5 space-y-3">
+            <h2 className="text-[20px] font-medium text-[#391713]">Recommend</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {recommended.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  variant="recommend"
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );
