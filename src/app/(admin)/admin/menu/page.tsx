@@ -45,6 +45,8 @@ type PortionDraft = {
   is_available: boolean;
 };
 
+const PORTION_SIZE_OPTIONS = ["Small", "Medium", "Large"] as const;
+
 const EMPTY_FORM = {
   name: "",
   description: "",
@@ -150,12 +152,20 @@ export default function AdminMenuPage() {
     setOpen(true);
   }
 
+  function nextPortionName(existing: PortionDraft[]) {
+    const used = new Set(existing.map((p) => p.name));
+    return (
+      PORTION_SIZE_OPTIONS.find((name) => !used.has(name)) ??
+      PORTION_SIZE_OPTIONS[0]
+    );
+  }
+
   function addPortion() {
     setPortions((prev) => [
       ...prev,
       {
         key: crypto.randomUUID(),
-        name: "",
+        name: nextPortionName(prev),
         price: form.price || "",
         is_available: true,
       },
@@ -500,65 +510,78 @@ export default function AdminMenuPage() {
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      {portions.map((portion, index) => (
-                        <div
-                          key={portion.key}
-                          className="grid gap-2 rounded-xl border bg-white p-2 sm:grid-cols-[1fr_7rem_auto_auto]"
-                        >
-                          <Input
-                            required
-                            placeholder={
-                              index === 0
-                                ? "Small"
-                                : index === 1
-                                  ? "Medium"
-                                  : index === 2
-                                    ? "Large"
-                                    : "Size name"
-                            }
-                            value={portion.name}
-                            onChange={(e) =>
-                              updatePortion(portion.key, {
-                                name: e.target.value,
-                              })
-                            }
-                          />
-                          <Input
-                            required
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            placeholder="Price"
-                            value={portion.price}
-                            onChange={(e) =>
-                              updatePortion(portion.key, {
-                                price: e.target.value,
-                              })
-                            }
-                          />
-                          <label className="flex items-center gap-1.5 text-xs whitespace-nowrap">
-                            <input
-                              type="checkbox"
-                              checked={portion.is_available}
+                      {portions.map((portion) => {
+                        const sizeOptions = (
+                          PORTION_SIZE_OPTIONS as readonly string[]
+                        ).includes(portion.name)
+                          ? [...PORTION_SIZE_OPTIONS]
+                          : [portion.name, ...PORTION_SIZE_OPTIONS];
+                        const sizeItems = sizeOptions.map((name) => ({
+                          value: name,
+                          label: name,
+                        }));
+                        return (
+                          <div
+                            key={portion.key}
+                            className="grid gap-2 rounded-xl border bg-white p-2 sm:grid-cols-[1fr_7rem_auto_auto]"
+                          >
+                            <Select
+                              value={portion.name || null}
+                              onValueChange={(v) => {
+                                if (v) {
+                                  updatePortion(portion.key, { name: v });
+                                }
+                              }}
+                              items={sizeItems}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select size" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {sizeOptions.map((name) => (
+                                  <SelectItem key={name} value={name}>
+                                    {name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Input
+                              required
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="Price"
+                              value={portion.price}
                               onChange={(e) =>
                                 updatePortion(portion.key, {
-                                  is_available: e.target.checked,
+                                  price: e.target.value,
                                 })
                               }
                             />
-                            On
-                          </label>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            className="text-destructive"
-                            onClick={() => removePortion(portion.key)}
-                          >
-                            <Trash2 className="size-3.5" />
-                          </Button>
-                        </div>
-                      ))}
+                            <label className="flex items-center gap-1.5 text-xs whitespace-nowrap">
+                              <input
+                                type="checkbox"
+                                checked={portion.is_available}
+                                onChange={(e) =>
+                                  updatePortion(portion.key, {
+                                    is_available: e.target.checked,
+                                  })
+                                }
+                              />
+                              On
+                            </label>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="text-destructive"
+                              onClick={() => removePortion(portion.key)}
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
