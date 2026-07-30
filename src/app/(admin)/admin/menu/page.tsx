@@ -162,6 +162,33 @@ export default function AdminMenuPage() {
     ]);
   }
 
+  function addStandardPortions() {
+    const base = Number(form.price) || 0;
+    const small = base > 0 ? String(Math.round(base * 0.75 * 100) / 100) : "";
+    const medium = base > 0 ? String(Math.round(base * 0.9 * 100) / 100) : "";
+    const large = form.price || "";
+    setPortions([
+      {
+        key: crypto.randomUUID(),
+        name: "Small",
+        price: small,
+        is_available: true,
+      },
+      {
+        key: crypto.randomUUID(),
+        name: "Medium",
+        price: medium,
+        is_available: true,
+      },
+      {
+        key: crypto.randomUUID(),
+        name: "Large",
+        price: large,
+        is_available: true,
+      },
+    ]);
+  }
+
   function updatePortion(
     key: string,
     patch: Partial<Omit<PortionDraft, "key">>,
@@ -441,18 +468,30 @@ export default function AdminMenuPage() {
                     <div>
                       <p className="text-sm font-semibold">Portion sizes</p>
                       <p className="text-xs text-muted-foreground">
-                        Optional — e.g. Small, Regular, Large
+                        Optional — e.g. Small, Medium, Large
                       </p>
                     </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={addPortion}
-                    >
-                      <Plus className="size-3.5" />
-                      Add size
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {portions.length === 0 ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={addStandardPortions}
+                        >
+                          Small / Medium / Large
+                        </Button>
+                      ) : null}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={addPortion}
+                      >
+                        <Plus className="size-3.5" />
+                        Add size
+                      </Button>
+                    </div>
                   </div>
 
                   {portions.length === 0 ? (
@@ -472,8 +511,10 @@ export default function AdminMenuPage() {
                               index === 0
                                 ? "Small"
                                 : index === 1
-                                  ? "Regular"
-                                  : "Large"
+                                  ? "Medium"
+                                  : index === 2
+                                    ? "Large"
+                                    : "Size name"
                             }
                             value={portion.name}
                             onChange={(e) =>
