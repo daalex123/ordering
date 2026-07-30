@@ -2,7 +2,11 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ProductCard } from "@/components/customer/product-card";
 import { HomeHeader } from "@/components/customer/home-header";
-import type { Category, Product, RestaurantSettings } from "@/types/database";
+import type {
+  Category,
+  ProductWithPortions,
+  RestaurantSettings,
+} from "@/types/database";
 import { getBranding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
@@ -52,7 +56,7 @@ export default async function MenuPage({
         .order("sort_order"),
       supabase
         .from("products")
-        .select("*")
+        .select("*, product_portions(id, price, is_available)")
         .eq("is_available", true)
         .order("sort_order"),
     ]);
@@ -60,7 +64,7 @@ export default async function MenuPage({
   const restaurant = settings as RestaurantSettings | null;
   const branding = getBranding(restaurant);
   const cats = (categories ?? []) as Category[];
-  const allItems = (products ?? []) as Product[];
+  const allItems = (products ?? []) as ProductWithPortions[];
   let items = allItems;
 
   if (params.category) {
@@ -236,7 +240,7 @@ function CategoryBrowsePage({
   restaurant,
   initialQuery,
 }: {
-  items: Product[];
+  items: ProductWithPortions[];
   chips: { id: string | null; label: string; href: string; icon: string }[];
   activeId: string | null;
   restaurant: RestaurantSettings | null;

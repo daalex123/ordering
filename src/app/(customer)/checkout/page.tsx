@@ -166,6 +166,7 @@ export default function CheckoutPage() {
         order_id: order.id,
         product_id: item.productId,
         product_name: item.name,
+        portion_name: item.portionName || null,
         unit_price: item.price,
         quantity: item.quantity,
         notes: item.notes || null,

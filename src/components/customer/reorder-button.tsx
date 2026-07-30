@@ -21,6 +21,7 @@ export function ReorderButton({ items }: { items: OrderItem[] }) {
         price: Number(item.unit_price),
         quantity: item.quantity,
         notes: item.notes ?? undefined,
+        portionName: item.portion_name,
       });
     }
     toast.success("Items added to cart");

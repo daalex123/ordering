@@ -58,7 +58,7 @@ export default function CartPage() {
 
         <ul className="space-y-0">
           {items.map((item, index) => (
-            <li key={item.productId}>
+            <li key={item.lineId}>
               <div className="flex items-center gap-3 py-4">
                 <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-white/20">
                   {item.imageUrl ? (
@@ -75,15 +75,16 @@ export default function CartPage() {
                   <p className="truncate font-semibold">{item.name}</p>
                   <p className="text-sm text-white/90">
                     {formatMoney(item.price)}
+                    {item.portionName ? (
+                      <span className="ml-1 opacity-80">· {item.portionName}</span>
+                    ) : null}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     className="flex size-7 items-center justify-center rounded-full bg-white text-primary"
-                    onClick={() =>
-                      setQuantity(item.productId, item.quantity - 1)
-                    }
+                    onClick={() => setQuantity(item.lineId, item.quantity - 1)}
                     aria-label="Decrease"
                   >
                     <Minus className="size-3.5" />
@@ -94,9 +95,7 @@ export default function CartPage() {
                   <button
                     type="button"
                     className="flex size-7 items-center justify-center rounded-full bg-white text-primary"
-                    onClick={() =>
-                      setQuantity(item.productId, item.quantity + 1)
-                    }
+                    onClick={() => setQuantity(item.lineId, item.quantity + 1)}
                     aria-label="Increase"
                   >
                     <Plus className="size-3.5" />
@@ -123,7 +122,7 @@ export default function CartPage() {
         <div className="mt-6 flex justify-center gap-3">
           <button
             type="button"
-            onClick={() => items.forEach((i) => removeItem(i.productId))}
+            onClick={() => items.forEach((i) => removeItem(i.lineId))}
             className="rounded-full border border-white/50 px-5 py-3 text-sm font-medium"
           >
             Clear

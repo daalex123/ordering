@@ -839,17 +839,24 @@ function OrderCard({
           {(compact ? order.order_items.slice(0, 4) : order.order_items).map(
             (item) => (
               <li key={item.id} className="flex justify-between gap-2">
-                <span>
-                  <span className="font-semibold text-primary">
-                    {item.quantity}×
-                  </span>{" "}
-                  {item.product_name}
-                  {item.notes ? (
-                    <span className="block text-sm text-muted-foreground">
-                      {item.notes}
-                    </span>
-                  ) : null}
-                </span>
+                      <span>
+                        <span className="font-semibold text-primary">
+                          {item.quantity}×
+                        </span>{" "}
+                        {item.product_name}
+                        {item.portion_name &&
+                        !item.product_name.includes(`(${item.portion_name})`) ? (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            · {item.portion_name}
+                          </span>
+                        ) : null}
+                        {item.notes ? (
+                          <span className="block text-sm text-muted-foreground">
+                            {item.notes}
+                          </span>
+                        ) : null}
+                      </span>
                 {!compact ? (
                   <span className="shrink-0 tabular-nums text-muted-foreground">
                     {formatMoney(Number(item.unit_price) * item.quantity)}
@@ -1035,6 +1042,13 @@ function OrderDetailSheet({
                           {item.quantity}×
                         </span>{" "}
                         {item.product_name}
+                        {item.portion_name &&
+                        !item.product_name.includes(`(${item.portion_name})`) ? (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            · {item.portion_name}
+                          </span>
+                        ) : null}
                         {item.notes ? (
                           <span className="block text-xs text-muted-foreground">
                             {item.notes}

@@ -3,7 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { formatMoney, type Product } from "@/types/database";
+import {
+  formatMoney,
+  type ProductPortion,
+  type ProductWithPortions,
+} from "@/types/database";
 import { AddToCartButton } from "@/components/customer/add-to-cart-button";
 
 export default async function ProductPage({
@@ -15,12 +19,19 @@ export default async function ProductPage({
   const supabase = await createClient();
   const { data } = await supabase
     .from("products")
-    .select("*")
+    .select("*, product_portions(*)")
     .eq("id", id)
     .maybeSingle();
 
   if (!data) notFound();
-  const product = data as Product;
+  const product = data as ProductWithPortions;
+  const portions = [...(product.product_portions ?? [])]
+    .filter((p: ProductPortion) => p.is_available)
+    .sort((a, b) => a.sort_order - b.sort_order);
+  const fromPrice =
+    portions.length > 0
+      ? Math.min(...portions.map((p) => Number(p.price)))
+      : Number(product.price);
 
   return (
     <div className="flex flex-col">
@@ -69,10 +80,13 @@ export default async function ProductPage({
             ) : null}
           </div>
           <p className="shrink-0 text-xl font-bold text-primary">
-            {formatMoney(Number(product.price))}
+            {portions.length > 1 ? "From " : ""}
+            {formatMoney(fromPrice)}
           </p>
         </div>
-        <AddToCartButton product={product} />
+        <AddToCartButton
+          product={{ ...product, product_portions: portions }}
+        />
       </div>
     </div>
   );

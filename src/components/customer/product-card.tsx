@@ -2,23 +2,50 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Plus, Star } from "lucide-react";
 import { toast } from "sonner";
-import type { Product } from "@/types/database";
+import type { ProductWithPortions } from "@/types/database";
 import { formatMoney } from "@/types/database";
 import { useCart } from "@/lib/cart-store";
+
+function displayPrice(product: ProductWithPortions) {
+  const portions = (product.product_portions ?? []).filter(
+    (p) => p.is_available !== false,
+  );
+  if (portions.length > 0) {
+    const min = Math.min(...portions.map((p) => Number(p.price)));
+    return {
+      amount: min,
+      from: portions.length > 1,
+      hasPortions: true,
+    };
+  }
+  return {
+    amount: Number(product.price),
+    from: false,
+    hasPortions: false,
+  };
+}
 
 export function ProductCard({
   product,
   variant = "list",
 }: {
-  product: Product;
+  product: ProductWithPortions;
   variant?: "list" | "seller" | "recommend";
 }) {
   const addItem = useCart((s) => s.addItem);
+  const router = useRouter();
+  const pricing = displayPrice(product);
 
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault();
+    e.stopPropagation();
+    if (pricing.hasPortions) {
+      router.push(`/product/${product.id}`);
+      return;
+    }
     addItem({
       productId: product.id,
       name: product.name,
@@ -27,6 +54,8 @@ export function ProductCard({
     });
     toast.success(`${product.name} added to cart`);
   }
+
+  const priceLabel = `${pricing.from ? "From " : ""}${formatMoney(pricing.amount)}`;
 
   if (variant === "seller") {
     return (
@@ -50,7 +79,7 @@ export function ProductCard({
             </div>
           )}
           <span className="absolute right-0 bottom-2 rounded-l-full bg-[#E95322] px-2 py-0.5 text-[11px] font-medium text-white">
-            {formatMoney(Number(product.price))}
+            {priceLabel}
           </span>
         </div>
       </Link>
@@ -83,14 +112,13 @@ export function ProductCard({
             5.0
           </span>
           <span className="absolute right-0 bottom-3 rounded-l-full bg-[#E95322] px-2.5 py-0.5 text-[11px] font-medium text-white">
-            {formatMoney(Number(product.price))}
+            {priceLabel}
           </span>
         </div>
       </Link>
     );
   }
 
-  // Figma Food/Snacks list card
   return (
     <article className="space-y-2.5">
       <Link href={`/product/${product.id}`} className="block">
@@ -149,7 +177,7 @@ export function ProductCard({
           ) : null}
         </div>
         <p className="shrink-0 text-[18px] font-normal capitalize text-[#E95322]">
-          {formatMoney(Number(product.price))}
+          {priceLabel}
         </p>
       </div>
     </article>
