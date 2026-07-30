@@ -56,6 +56,7 @@ export function ProductCard({
   }
 
   const priceLabel = `${pricing.from ? "From " : ""}${formatMoney(pricing.amount)}`;
+  const sellerPriceLabel = formatMoney(pricing.amount);
 
   if (variant === "seller") {
     return (
@@ -79,7 +80,7 @@ export function ProductCard({
             </div>
           )}
           <span className="absolute right-0 bottom-2 rounded-l-full bg-[#E95322] px-2 py-0.5 text-[11px] font-medium text-white">
-            {priceLabel}
+            {sellerPriceLabel}
           </span>
         </div>
       </Link>

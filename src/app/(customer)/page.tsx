@@ -41,7 +41,7 @@ function greetingForHour(hour: number) {
 export default async function MenuPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; menu?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -79,11 +79,11 @@ export default async function MenuPage({
     );
   }
 
-  const categorySelected = Boolean(params.category);
+  const showFullMenu = params.menu === "1" || Boolean(params.category);
   const hour = new Date().getHours();
   const bestSellers = allItems.filter((p) => p.is_best_seller);
   const recommended = allItems.filter((p) => p.is_recommended);
-  const viewAllHref = cats[0] ? `/?category=${cats[0].id}` : "/";
+  const fullMenuHref = "/?menu=1";
 
   // Category chips — home uses real categories (no "All" tab), selected uses All + cats
   const homeChips = cats.map((cat, i) => ({
@@ -97,13 +97,13 @@ export default async function MenuPage({
     {
       id: null as string | null,
       label: "All",
-      href: "/",
+      href: fullMenuHref,
       icon: "/yumquick/cat-snacks.svg",
     },
     ...homeChips.map((c) => ({ ...c, id: c.id as string | null })),
   ];
 
-  if (categorySelected) {
+  if (showFullMenu) {
     return (
       <CategoryBrowsePage
         items={items}
@@ -171,7 +171,7 @@ export default async function MenuPage({
                 Best Seller
               </h2>
               <Link
-                href={viewAllHref}
+                href={fullMenuHref}
                 className="flex items-center gap-1 text-[12px] font-semibold capitalize text-[#E95322]"
               >
                 View All
@@ -194,7 +194,7 @@ export default async function MenuPage({
 
         <SectionDivider />
 
-        <FullMenuButton href={viewAllHref} />
+        <FullMenuButton href={fullMenuHref} />
 
         {/* Recommend */}
         {recommended.length > 0 ? (
@@ -212,7 +212,7 @@ export default async function MenuPage({
           </section>
         ) : null}
 
-        <FullMenuButton href={viewAllHref} className="mt-5" />
+        <FullMenuButton href={fullMenuHref} className="mt-5" />
       </div>
     </div>
   );
