@@ -17,7 +17,7 @@ export function CustomerNav() {
   const count = useCart((s) => s.items.reduce((n, i) => n + i.quantity, 0));
 
   if (pathname.startsWith("/auth")) return null;
-  if (pathname.startsWith("/launch") || pathname.startsWith("/welcome")) {
+  if (pathname.startsWith("/welcome") || pathname.startsWith("/launch")) {
     return null;
   }
 

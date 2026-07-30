@@ -5,18 +5,18 @@ import { usePathname, useRouter } from "next/navigation";
 
 const STORAGE_KEY = "kb_onboarded";
 
-/** First visit → splash; returning users skip onboarding. */
+/** First visit → welcome; returning users skip it. */
 export function OnboardingGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (pathname.startsWith("/launch") || pathname.startsWith("/welcome")) {
+    if (pathname.startsWith("/welcome") || pathname.startsWith("/launch")) {
       return;
     }
     try {
       if (!window.localStorage.getItem(STORAGE_KEY)) {
-        router.replace("/launch");
+        router.replace("/welcome");
       }
     } catch {
       // private mode / blocked storage — stay on page

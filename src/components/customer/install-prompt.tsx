@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 
 type BeforeInstallPromptEvent = Event & {
@@ -9,42 +10,39 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 const DISMISS_KEY = "kb_install_dismissed";
+export const PENDING_INSTALL_KEY = "kb_pending_install";
+
+function isStandaloneDisplay() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    ("standalone" in navigator &&
+      (navigator as Navigator & { standalone?: boolean }).standalone === true)
+  );
+}
+
+function shouldHideOnPath(pathname: string) {
+  return (
+    pathname.startsWith("/welcome") ||
+    pathname.startsWith("/launch") ||
+    pathname.startsWith("/admin")
+  );
+}
 
 export function InstallPrompt() {
+  const pathname = usePathname();
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
     null,
   );
   const [visible, setVisible] = useState(false);
   const [iosHint, setIosHint] = useState(false);
 
+  // Always capture the install event (including during welcome).
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    try {
-      if (window.localStorage.getItem(DISMISS_KEY) === "1") return;
-    } catch {
-      /* ignore */
-    }
-
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      ("standalone" in navigator &&
-        (navigator as Navigator & { standalone?: boolean }).standalone === true);
-    if (isStandalone) return;
-
-    const ua = window.navigator.userAgent;
-    const isIos = /iPad|iPhone|iPod/.test(ua);
-    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
-
-    if (isIos && isSafari) {
-      const t = window.setTimeout(() => setIosHint(true), 2500);
-      return () => window.clearTimeout(t);
-    }
 
     const onBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
-      setVisible(true);
     };
 
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
@@ -52,9 +50,43 @@ export function InstallPrompt() {
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
   }, []);
 
+  // Show only on the first app screen after welcome.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (shouldHideOnPath(pathname)) {
+      setVisible(false);
+      setIosHint(false);
+      return;
+    }
+
+    try {
+      if (window.localStorage.getItem(DISMISS_KEY) === "1") return;
+      if (window.localStorage.getItem(PENDING_INSTALL_KEY) !== "1") return;
+    } catch {
+      return;
+    }
+
+    if (isStandaloneDisplay()) return;
+
+    const ua = window.navigator.userAgent;
+    const isIos = /iPad|iPhone|iPod/.test(ua);
+    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+
+    const timer = window.setTimeout(() => {
+      if (isIos && isSafari) {
+        setIosHint(true);
+      } else {
+        setVisible(true);
+      }
+    }, 600);
+
+    return () => window.clearTimeout(timer);
+  }, [pathname]);
+
   function dismiss() {
     try {
       window.localStorage.setItem(DISMISS_KEY, "1");
+      window.localStorage.removeItem(PENDING_INSTALL_KEY);
     } catch {
       /* ignore */
     }
@@ -70,6 +102,7 @@ export function InstallPrompt() {
     dismiss();
   }
 
+  if (shouldHideOnPath(pathname)) return null;
   if (!visible && !iosHint) return null;
 
   return (

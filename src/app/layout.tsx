@@ -3,6 +3,7 @@ import { League_Spartan, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { SerwistProvider } from "@serwist/next/react";
 import { BrandingProvider } from "@/components/branding-provider";
+import { InstallPrompt } from "@/components/customer/install-prompt";
 import { createClient } from "@/lib/supabase/server";
 import { getBranding } from "@/lib/branding";
 import type { RestaurantSettings } from "@/types/database";
@@ -100,6 +101,7 @@ export default function RootLayout({
         >
           <BrandingProvider>
             {children}
+            <InstallPrompt />
             <Toaster richColors position="top-center" />
           </BrandingProvider>
         </SerwistProvider>
