@@ -192,30 +192,9 @@ export default async function MenuPage({
           </section>
         ) : null}
 
-        {/* Promo banner */}
-        <div className="relative mt-5 overflow-hidden rounded-[20px] bg-[#E95322] shadow-[0_4px_4px_rgba(215,215,215,1)]">
-          <div className="pointer-events-none absolute -top-8 left-[28%] size-14 rounded-full border-8 border-[#F5CB58]" />
-          <div className="pointer-events-none absolute -bottom-4 -left-3 size-12 rounded-full border-8 border-[#F5CB58]" />
-          <div className="relative z-10 flex min-h-[128px] items-center px-4 py-5">
-            <div className="max-w-[48%] space-y-1 text-center text-[#F8F8F8]">
-              <p className="text-[16px] leading-snug">
-                Experience our delicious new dish
-              </p>
-              <p className="text-[32px] font-bold leading-none">30% OFF</p>
-            </div>
-          </div>
-        </div>
-        <div className="mt-3 flex justify-center gap-1.5">
-          {[0, 1, 2, 3].map((i) => (
-            <span
-              key={i}
-              className={cn(
-                "h-1 w-5 rounded-full",
-                i === 1 ? "bg-[#E95322]" : "bg-[#F3E9B5]",
-              )}
-            />
-          ))}
-        </div>
+        <SectionDivider />
+
+        <FullMenuButton href={viewAllHref} />
 
         {/* Recommend */}
         {recommended.length > 0 ? (
@@ -232,8 +211,50 @@ export default async function MenuPage({
             </div>
           </section>
         ) : null}
+
+        <FullMenuButton href={viewAllHref} className="mt-5" />
       </div>
     </div>
+  );
+}
+
+function SectionDivider() {
+  return (
+    <div
+      className="my-6 flex items-center gap-3"
+      role="separator"
+      aria-hidden
+    >
+      <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#E95322]/45 to-[#E95322]/70" />
+      <span className="relative flex size-2.5 items-center justify-center">
+        <span className="absolute size-2.5 rotate-45 rounded-[2px] border border-[#E95322]/50 bg-[#FFDECF]" />
+        <span className="relative size-1 rotate-45 rounded-[1px] bg-[#E95322]" />
+      </span>
+      <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#E95322]/45 to-[#E95322]/70" />
+    </div>
+  );
+}
+
+function FullMenuButton({
+  href,
+  className,
+}: {
+  href: string;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#E95322] text-[15px] font-semibold tracking-wide text-white shadow-[0_8px_20px_rgba(233,83,34,0.28)] transition active:scale-[0.98]",
+        className,
+      )}
+    >
+      Full menu
+      <span aria-hidden className="text-lg leading-none">
+        ›
+      </span>
+    </Link>
   );
 }
 
