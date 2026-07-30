@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-};
+import {
+  consumeDeferredInstallPrompt,
+  subscribeDeferredInstallPrompt,
+  type BeforeInstallPromptEvent,
+} from "@/lib/pwa-install";
 
 const DISMISS_KEY = "kb_install_dismissed";
 export const PENDING_INSTALL_KEY = "kb_pending_install";
@@ -36,21 +36,9 @@ export function InstallPrompt() {
   const [visible, setVisible] = useState(false);
   const [iosHint, setIosHint] = useState(false);
 
-  // Always capture the install event (including during welcome).
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  useEffect(() => subscribeDeferredInstallPrompt(setDeferred), []);
 
-    const onBeforeInstall = (e: Event) => {
-      e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
-    };
-
-    window.addEventListener("beforeinstallprompt", onBeforeInstall);
-    return () =>
-      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
-  }, []);
-
-  // Show only on the first app screen after welcome.
+  // Reminder banner if the user skipped the welcome install step.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (shouldHideOnPath(pathname)) {
@@ -92,13 +80,13 @@ export function InstallPrompt() {
     }
     setVisible(false);
     setIosHint(false);
-    setDeferred(null);
   }
 
   async function install() {
-    if (!deferred) return;
-    await deferred.prompt();
-    await deferred.userChoice;
+    const promptEvent = deferred ?? consumeDeferredInstallPrompt();
+    if (!promptEvent) return;
+    await promptEvent.prompt();
+    await promptEvent.userChoice;
     dismiss();
   }
 
@@ -124,13 +112,13 @@ export function InstallPrompt() {
               : "Add to your home screen for quicker ordering"}
           </p>
         </div>
-        {deferred ? (
+        {deferred && !iosHint ? (
           <button
             type="button"
             onClick={() => void install()}
             className="shrink-0 rounded-full bg-[#F5CB58] px-3 py-1.5 text-xs font-bold text-[#391713]"
           >
-            Install
+            Download
           </button>
         ) : null}
         <button
