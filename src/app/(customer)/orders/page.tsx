@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CustomerPageHeader } from "@/components/customer/customer-page-header";
+import { MarkNotificationsRead } from "@/components/mark-notifications-read";
 
 const TABS = [
   { id: "active", label: "Active" },
@@ -54,6 +55,7 @@ export default async function OrdersPage({
 
   return (
     <div>
+      <MarkNotificationsRead scope="customer" />
       <CustomerPageHeader title="My Orders" backHref="/" />
       <div className="-mt-4 rounded-t-[30px] bg-white px-5 pt-5 pb-8">
         <div className="mb-6 flex gap-2">

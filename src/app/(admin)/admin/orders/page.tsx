@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useMemo, useState, type ComponentType } from "react";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -62,6 +62,7 @@ import {
 } from "@/components/ui/sheet";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { OrderStatusBadge } from "@/components/admin/order-status-badge";
+import { MarkNotificationsRead } from "@/components/mark-notifications-read";
 import { cn } from "@/lib/utils";
 
 const BOARD_COLUMNS: OrderStatus[] = [
@@ -91,7 +92,6 @@ export default function AdminOrdersPage() {
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [cancelId, setCancelId] = useState<string | null>(null);
-  const knownIds = useRef<Set<string> | null>(null);
 
   useEffect(() => {
     try {
@@ -126,21 +126,7 @@ export default function AdminOrdersPage() {
       toast.error(error.message);
       return;
     }
-    const next = (data ?? []) as OrderWithItems[];
-
-    if (knownIds.current) {
-      const fresh = next.filter((o) => !knownIds.current!.has(o.id));
-      if (fresh.length === 1) {
-        const o = fresh[0];
-        toast.message(`New order · #${orderTicketLabel(o)}`, {
-          description: `${o.customer_name || o.customer_phone} · ${formatMoney(Number(o.total))}`,
-        });
-      } else if (fresh.length > 1) {
-        toast.message(`${fresh.length} new orders`);
-      }
-    }
-    knownIds.current = new Set(next.map((o) => o.id));
-    setOrders(next);
+    setOrders((data ?? []) as OrderWithItems[]);
   }, []);
 
   useEffect(() => {
@@ -317,6 +303,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="max-w-full space-y-4 overflow-x-hidden">
+      <MarkNotificationsRead scope="admin" />
       <AdminPageHeader
         title="Kitchen board"
         description="Confirm, prep, and complete tickets · live + auto-refresh"

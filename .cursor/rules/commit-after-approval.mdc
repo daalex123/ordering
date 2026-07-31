@@ -1,0 +1,14 @@
+---
+description: Commit and push promptly after the user approves completed work
+alwaysApply: true
+---
+
+# Commit and push after approval
+
+When the user **approves** completed work (e.g. “looks good”, “approve”, “ship it”, “commit”, “remember always commit and push after approval”, or similar sign-off on the changes just made):
+
+1. **Commit** the approved work immediately (follow the repo’s committing-changes protocol: status, diff, log, HEREDOC message, no secrets).
+2. **Push** to `origin` right after a successful commit — same as `.cursor/rules/auto-push-commits.mdc` (background push, no extra confirmation).
+3. Do not wait for a second “please commit” if approval of the finished task is already clear.
+4. Still do **not** commit unprompted mid-task, speculative WIP, or unrelated files. Only commit what was approved.
+5. Never force-push to `main`/`master` unless explicitly requested.

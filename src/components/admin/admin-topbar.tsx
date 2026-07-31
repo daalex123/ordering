@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 
 const COMMANDS = [
@@ -93,6 +94,7 @@ export function AdminTopbar({ restaurantName }: { restaurantName: string }) {
           >
             <Search className="size-4" />
           </button>
+          <NotificationBell scope="admin" variant="admin" />
           <div className="rounded-xl border bg-background/80 px-3 py-1.5 text-right">
             <p className="font-mono text-sm font-semibold tabular-nums tracking-tight">
               {format(now, "h:mm:ss a")}

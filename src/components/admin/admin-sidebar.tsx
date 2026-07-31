@@ -13,6 +13,11 @@ import {
   Radio,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  formatBadgeCount,
+  unreadCount,
+  useNotifications,
+} from "@/lib/notification-store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -32,6 +37,8 @@ export function AdminNav({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const notifItems = useNotifications((s) => s.items);
+  const ordersBadge = formatBadgeCount(unreadCount(notifItems, "admin"));
 
   async function signOut() {
     const supabase = createClient();
@@ -88,9 +95,16 @@ export function AdminNav({
                 )}
               >
                 <Icon className="size-4 shrink-0 opacity-90" />
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium leading-none">
-                    {label}
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2">
+                    <span className="block text-sm font-medium leading-none">
+                      {label}
+                    </span>
+                    {href === "/admin/orders" && ordersBadge ? (
+                      <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f5cb58] px-1 text-[9px] font-bold text-[#391713]">
+                        {ordersBadge}
+                      </span>
+                    ) : null}
                   </span>
                   <span
                     className={cn(
@@ -175,6 +189,11 @@ export function AdminNav({
               >
                 <Icon className="size-3.5" />
                 {label}
+                {href === "/admin/orders" && ordersBadge ? (
+                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f5cb58] px-1 text-[9px] font-bold text-[#391713]">
+                    {ordersBadge}
+                  </span>
+                ) : null}
               </Link>
             );
           })}

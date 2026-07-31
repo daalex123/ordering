@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-store";
+import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 
 export function HomeHeader({
@@ -85,7 +86,7 @@ export function HomeHeader({
           </button>
         </form>
         <HeaderIcon href="/cart" src="/yumquick/icon-cart.svg" label="Cart" badge={count} />
-        <HeaderIcon href="/orders" src="/yumquick/icon-bell.svg" label="Orders" />
+        <NotificationBell scope="customer" variant="customer" />
         <HeaderIcon href="/profile" src="/yumquick/icon-user.svg" label="Profile" />
       </div>
       {!compact && greeting ? (
