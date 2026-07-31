@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  BarChart3,
   ClipboardList,
+  Columns3,
   LayoutDashboard,
   Search,
   Settings,
@@ -21,8 +23,10 @@ import { cn } from "@/lib/utils";
 
 const COMMANDS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, hint: "Overview & KPIs" },
-  { href: "/admin/orders", label: "Order Lists", icon: ClipboardList, hint: "Kitchen queue" },
+  { href: "/admin/orders", label: "Kitchen Board", icon: Columns3, hint: "Live kitchen queue" },
+  { href: "/admin/orders/list", label: "Orders", icon: ClipboardList, hint: "Order history & search" },
   { href: "/admin/menu", label: "Products", icon: UtensilsCrossed, hint: "Products & categories" },
+  { href: "/admin/reports", label: "Reports", icon: BarChart3, hint: "Sales & product reports" },
   { href: "/admin/settings", label: "Settings", icon: Settings, hint: "Store & branding" },
 ];
 
@@ -109,7 +113,10 @@ export function AdminTopbar({ restaurantName }: { restaurantName: string }) {
               const active =
                 cmd.href === "/admin"
                   ? pathname === "/admin"
-                  : pathname.startsWith(cmd.href);
+                  : pathname === cmd.href ||
+                    (cmd.href !== "/admin/orders" &&
+                      pathname.startsWith(`${cmd.href}/`)) ||
+                    (cmd.href === "/admin/orders" && pathname === "/admin/orders");
               const Icon = cmd.icon;
               return (
                 <li key={cmd.href}>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type ComponentType } from "react";
+import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -9,7 +10,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock3,
-  Columns3,
   Flame,
   LayoutList,
   MapPin,
@@ -64,6 +64,7 @@ import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { MarkNotificationsRead } from "@/components/mark-notifications-read";
 import { useNotifications, adminOrderNotificationId } from "@/lib/notification-store";
+import { notifyOrderSms } from "@/lib/notify-order-sms";
 import { cn } from "@/lib/utils";
 
 const BOARD_COLUMNS: OrderStatus[] = [
@@ -74,15 +75,10 @@ const BOARD_COLUMNS: OrderStatus[] = [
   "out_for_delivery",
 ];
 
-const VIEW_KEY = "admin-orders-view";
-
-type ViewMode = "board" | "list";
 type FulfillmentFilter = "all" | FulfillmentType;
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
-  const [view, setView] = useState<ViewMode>("board");
-  const [filter, setFilter] = useState<string>("active");
   const [fulfillment, setFulfillment] = useState<FulfillmentFilter>("all");
   const [boardTab, setBoardTab] = useState<OrderStatus | "all">("all");
   const [query, setQuery] = useState("");
@@ -94,24 +90,6 @@ export default function AdminOrdersPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [cancelId, setCancelId] = useState<string | null>(null);
   const removeNotification = useNotifications((s) => s.remove);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(VIEW_KEY);
-      if (saved === "board" || saved === "list") setView(saved);
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  function changeView(next: ViewMode) {
-    setView(next);
-    try {
-      localStorage.setItem(VIEW_KEY, next);
-    } catch {
-      /* ignore */
-    }
-  }
 
   const load = useCallback(async (opts?: { soft?: boolean }) => {
     if (!opts?.soft) setLoading(true);
@@ -225,6 +203,9 @@ export default function AdminOrdersPage() {
       return;
     }
     toast.success(ORDER_STATUS_LABELS[status]);
+    if (status === "completed") {
+      notifyOrderSms(orderId, "completed");
+    }
     if (status === "cancelled" || status === "completed") {
       removeNotification(adminOrderNotificationId(orderId));
       setSelectedId((id) => (id === orderId ? null : id));
@@ -253,19 +234,6 @@ export default function AdminOrdersPage() {
       return hay.includes(q);
     });
   }, [orders, query, fulfillment, tick]);
-
-  const listVisible = useMemo(() => {
-    return filtered
-      .filter((o) => {
-        if (filter === "all") return true;
-        if (filter === "active") return isActiveOrder(o.status);
-        return o.status === filter;
-      })
-      .sort(
-        (a, b) =>
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-      );
-  }, [filtered, filter]);
 
   const boardColumns = useMemo(() => {
     return BOARD_COLUMNS.map((status) => ({
@@ -312,6 +280,10 @@ export default function AdminOrdersPage() {
         description="Confirm, prep, and complete tickets · live + auto-refresh"
         actions={
           <>
+            <Button variant="outline" size="sm" render={<Link href="/admin/orders/list" />}>
+              <LayoutList className="size-3.5" />
+              All orders
+            </Button>
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium",
@@ -328,29 +300,6 @@ export default function AdminOrdersPage() {
               />
               {live ? "Live" : "Polling"}
             </span>
-            <div className="inline-flex rounded-lg border border-[var(--admin-line)] bg-white p-0.5">
-              {(
-                [
-                  ["board", Columns3, "Board"],
-                  ["list", LayoutList, "List"],
-                ] as const
-              ).map(([mode, Icon, label]) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => changeView(mode)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition",
-                    view === mode
-                      ? "bg-[#4880ff] text-white"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  <Icon className="size-4" strokeWidth={1.75} />
-                  {label}
-                </button>
-              ))}
-            </div>
             <Button
               variant="outline"
               size="sm"
@@ -444,23 +393,7 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
-        {view === "list" ? (
-          <FilterPills
-            value={filter}
-            onChange={setFilter}
-            counts={{
-              active: filtered.filter((o) => isActiveOrder(o.status)).length,
-              all: filtered.length,
-              ...Object.fromEntries(
-                [...ORDER_STATUS_FLOW, "cancelled" as const].map((s) => [
-                  s,
-                  filtered.filter((o) => o.status === s).length,
-                ]),
-              ),
-            }}
-          />
-        ) : (
-          <div className="flex gap-1.5 overflow-x-auto pb-0.5 xl:hidden">
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5 xl:hidden">
             <button
               type="button"
               onClick={() => setBoardTab("all")}
@@ -492,7 +425,6 @@ export default function AdminOrdersPage() {
               </button>
             ))}
           </div>
-        )}
       </div>
 
       {loading && orders.length === 0 ? (
@@ -504,7 +436,7 @@ export default function AdminOrdersPage() {
             />
           ))}
         </div>
-      ) : view === "board" ? (
+      ) : (
         <div
           className={cn(
             "w-full max-w-full",
@@ -544,22 +476,6 @@ export default function AdminOrdersPage() {
                 ) : null}
               </div>
             </section>
-          ))}
-        </div>
-      ) : listVisible.length === 0 ? (
-        <EmptyState query={query} />
-      ) : (
-        <div className="grid gap-3 lg:grid-cols-2">
-          {listVisible.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              busy={busyIds.has(order.id)}
-              onOpen={() => setSelectedId(order.id)}
-              onAdvance={(next) => void updateStatus(order.id, next)}
-              onCancel={() => setCancelId(order.id)}
-              onPrint={() => printOrderTicket(order)}
-            />
           ))}
         </div>
       )}
@@ -654,67 +570,6 @@ function StatChip({
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className="text-2xl font-semibold tabular-nums leading-none">{value}</p>
       </div>
-    </div>
-  );
-}
-
-function FilterPills({
-  value,
-  onChange,
-  counts,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  counts: Record<string, number>;
-}) {
-  const pills = [
-    { value: "active", label: "Active" },
-    { value: "all", label: "All" },
-    ...ORDER_STATUS_FLOW.map((s) => ({
-      value: s,
-      label: ORDER_STATUS_LABELS[s],
-    })),
-    { value: "cancelled", label: "Cancelled" },
-  ];
-  return (
-    <div className="flex gap-1.5 overflow-x-auto pb-0.5">
-      {pills.map((f) => (
-        <button
-          key={f.value}
-          type="button"
-          onClick={() => onChange(f.value)}
-            className={cn(
-                "inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition",
-            value === f.value
-              ? "border-[#4880ff] bg-[#4880ff] text-white"
-              : "border-border bg-white text-muted-foreground hover:text-foreground",
-          )}
-        >
-          {f.label}
-          <span
-            className={cn(
-              "rounded-md px-1.5 py-0.5 text-xs tabular-nums",
-              value === f.value ? "bg-white/20" : "bg-muted",
-            )}
-          >
-            {counts[f.value] ?? 0}
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function EmptyState({ query }: { query: string }) {
-  return (
-    <div className="admin-panel rounded-xl px-6 py-16 text-center">
-      <Package className="mx-auto size-8 text-muted-foreground/40" strokeWidth={1.5} />
-      <p className="mt-3 text-sm font-medium">
-        {query ? "No matching orders" : "No orders in this filter"}
-      </p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        New tickets appear here automatically
-      </p>
     </div>
   );
 }

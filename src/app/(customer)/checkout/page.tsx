@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CustomerPageHeader } from "@/components/customer/customer-page-header";
+import { notifyOrderSms } from "@/lib/notify-order-sms";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -192,6 +193,7 @@ export default function CheckoutPage() {
       .eq("id", user.id);
 
     clear();
+    notifyOrderSms(order.id, "placed");
     setLoading(false);
     toast.success("Order placed!");
     router.push(`/orders/${order.id}`);

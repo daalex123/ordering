@@ -10,6 +10,8 @@ import {
   LogOut,
   Store,
   ExternalLink,
+  BarChart3,
+  Columns3,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -22,10 +24,18 @@ import { Button } from "@/components/ui/button";
 
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Order Lists", icon: ClipboardList },
+  { href: "/admin/orders", label: "Kitchen Board", icon: Columns3, exact: true },
+  { href: "/admin/orders/list", label: "Orders", icon: ClipboardList },
   { href: "/admin/menu", label: "Products", icon: UtensilsCrossed },
+  { href: "/admin/reports", label: "Reports", icon: BarChart3 },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
+
+function linkActive(pathname: string, href: string, exact?: boolean) {
+  if (href === "/admin") return pathname === "/admin";
+  if (exact) return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function AdminNav({
   restaurantName,
@@ -68,11 +78,8 @@ export function AdminNav({
         </div>
 
         <nav className="flex flex-1 flex-col gap-1 px-3 py-1">
-          {links.map(({ href, label, icon: Icon }) => {
-            const active =
-              href === "/admin"
-                ? pathname === "/admin"
-                : pathname.startsWith(href);
+          {links.map(({ href, label, icon: Icon, exact }) => {
+            const active = linkActive(pathname, href, exact);
             return (
               <Link
                 key={href}
@@ -158,11 +165,8 @@ export function AdminNav({
           </Button>
         </div>
         <nav className="flex gap-1.5 overflow-x-auto px-2 pb-2.5">
-          {links.map(({ href, label, icon: Icon }) => {
-            const active =
-              href === "/admin"
-                ? pathname === "/admin"
-                : pathname.startsWith(href);
+          {links.map(({ href, label, icon: Icon, exact }) => {
+            const active = linkActive(pathname, href, exact);
             return (
               <Link
                 key={href}
