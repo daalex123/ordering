@@ -1,0 +1,129 @@
+/* Customer glassmorphism storefront — see DESIGN.md */
+.storefront-glass {
+  --glass-bg: #1a120e;
+  --glass-bg-deep: #0e0a08;
+  --glass-surface: rgba(255, 255, 255, 0.1);
+  --glass-surface-strong: rgba(255, 255, 255, 0.14);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-text: #ffffff;
+  --glass-muted: rgba(255, 255, 255, 0.62);
+  --glass-accent: var(--primary, #ff8a00);
+  --glass-danger: #ff4d4f;
+  --background: var(--glass-bg);
+  --foreground: var(--glass-text);
+  --card: var(--glass-surface-strong);
+  --card-foreground: var(--glass-text);
+  --muted-foreground: var(--glass-muted);
+  --border: var(--glass-border);
+  --input: rgba(255, 255, 255, 0.08);
+  --yum-ink: var(--glass-text);
+  --yum-muted: var(--glass-muted);
+  --yum-sheet: var(--glass-bg);
+  --yum-peach: rgba(255, 255, 255, 0.08);
+  --yum-cream: rgba(255, 255, 255, 0.12);
+  --yum-yellow: #f5cb58;
+
+  color: var(--glass-text);
+  background-color: var(--glass-bg-deep);
+  background-image:
+    radial-gradient(
+      ellipse 90% 60% at 10% -10%,
+      rgba(255, 138, 0, 0.28),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 95% 15%,
+      rgba(233, 83, 34, 0.22),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 80% 55% at 50% 110%,
+      rgba(255, 138, 0, 0.18),
+      transparent 55%
+    ),
+    linear-gradient(165deg, #2a1a12 0%, #120c09 45%, #0a0705 100%);
+  background-attachment: fixed;
+}
+
+.glass-panel {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.glass-panel-strong {
+  background: var(--glass-surface-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.glass-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--glass-text);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 160ms ease;
+}
+
+.glass-icon-btn:active {
+  transform: scale(0.94);
+}
+
+.glass-cta {
+  background: linear-gradient(135deg, #ff9a1f 0%, #ff8a00 45%, #e95322 100%);
+  color: #fff;
+  border: none;
+  box-shadow:
+    0 8px 24px rgba(255, 138, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition:
+    transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 160ms ease;
+}
+
+.glass-cta:active {
+  transform: scale(0.98);
+}
+
+@keyframes glass-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.glass-enter {
+  animation: glass-fade-up 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.glass-enter-delay-1 {
+  animation-delay: 60ms;
+}
+.glass-enter-delay-2 {
+  animation-delay: 120ms;
+}
+.glass-enter-delay-3 {
+  animation-delay: 180ms;
+}

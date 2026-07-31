@@ -4,20 +4,22 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCart } from "@/lib/cart-store";
+import { Menu, Search, SlidersHorizontal } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 
 export function HomeHeader({
   greeting,
-  tagline,
+  firstName,
+  headline,
   initialQuery,
   compact = false,
   logoUrl,
   restaurantName,
 }: {
   greeting?: string;
-  tagline?: string;
+  firstName?: string;
+  headline?: string;
   initialQuery: string;
   compact?: boolean;
   logoUrl?: string | null;
@@ -25,106 +27,90 @@ export function HomeHeader({
 }) {
   const router = useRouter();
   const [q, setQ] = useState(initialQuery);
-  const count = useCart((s) => s.items.reduce((n, i) => n + i.quantity, 0));
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const params = new URLSearchParams(window.location.search);
     if (q.trim()) params.set("q", q.trim());
     else params.delete("q");
-    // Searching from home keeps home unless category already set
     const qs = params.toString();
     router.push(qs ? `/?${qs}` : "/");
   }
 
+  const displayName = firstName || "there";
+
   return (
-    <header className={cn("bg-[#F5CB58] px-5 pt-3", compact ? "pb-4" : "pb-5")}>
-      {!compact ? (
-        <div className="mb-3 flex items-center gap-2.5">
-          <Image
-            src={logoUrl || "/logo-kings-bakamuna.png"}
-            alt={restaurantName || "Kings Bakamuna"}
-            width={40}
-            height={40}
-            className="size-10 shrink-0 rounded-xl object-cover"
-            unoptimized
-            priority
-          />
-          <div className="min-w-0">
-            <p className="truncate text-[16px] font-bold leading-tight text-[#391713]">
-              {restaurantName || "Kings Bakamuna"}
-            </p>
-            {tagline ? (
-              <p className="truncate text-[11px] font-medium text-[#E95322]">
-                {tagline}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-      <div className="flex items-center gap-2">
-        <form onSubmit={submit} className="relative min-w-0 flex-1">
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search"
-            className="h-[42px] w-full rounded-full border-0 bg-white pr-11 pl-4 text-[12px] font-light text-[#391713] placeholder:text-[#676767] outline-none"
-          />
-          <button
-            type="submit"
-            className="absolute top-1/2 right-1.5 size-8 -translate-y-1/2 overflow-hidden rounded-full"
-            aria-label="Search"
+    <header className={cn("px-5 pt-4", compact ? "pb-3" : "pb-2")}>
+      <div className="mb-5 flex items-center justify-between">
+        <Link
+          href="/?menu=1"
+          className="glass-icon-btn"
+          aria-label="Browse full menu"
+        >
+          <Menu className="size-5" strokeWidth={1.75} />
+        </Link>
+        <div className="flex items-center gap-2.5">
+          <NotificationBell scope="customer" variant="customer" />
+          <Link
+            href="/profile"
+            className="relative size-11 overflow-hidden rounded-full border border-white/20 shadow-lg"
+            aria-label="Profile"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/yumquick/filter-btn.svg"
-              alt=""
-              width={32}
-              height={32}
-              className="size-full object-contain"
+            <Image
+              src={logoUrl || "/logo-kings-bakamuna.png"}
+              alt={restaurantName || "Profile"}
+              fill
+              className="object-cover"
+              unoptimized
+              priority
             />
-          </button>
-        </form>
-        <HeaderIcon href="/cart" src="/yumquick/icon-cart.svg" label="Cart" badge={count} />
-        <NotificationBell scope="customer" variant="customer" />
-        <HeaderIcon href="/profile" src="/yumquick/icon-user.svg" label="Profile" />
+            <span className="absolute top-0 right-0 size-2.5 rounded-full border-2 border-[#1a120e] bg-[var(--glass-danger)]" />
+          </Link>
+        </div>
       </div>
-      {!compact && greeting ? (
-        <div className="mt-4 space-y-1">
-          <h1 className="text-[30px] font-bold capitalize leading-none tracking-tight text-[#F8F8F8]">
-            {greeting}
+
+      {!compact ? (
+        <div className="glass-enter mb-5 space-y-1">
+          <p className="text-[15px] font-medium text-white/70">
+            Hi, <span className="text-white">{displayName}</span>{" "}
+            <span aria-hidden>👋</span>
+            {greeting ? (
+              <span className="sr-only"> — {greeting}</span>
+            ) : null}
+          </p>
+          <h1 className="max-w-[16ch] text-[32px] font-bold leading-[1.05] tracking-tight text-white">
+            {headline || (
+              <>
+                Good Food Good{" "}
+                <span className="text-[var(--glass-accent)]">Mood!</span>
+              </>
+            )}
           </h1>
         </div>
       ) : null}
-    </header>
-  );
-}
 
-function HeaderIcon({
-  href,
-  src,
-  label,
-  badge,
-}: {
-  href: string;
-  src: string;
-  label: string;
-  badge?: number;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-label={label}
-      className="relative flex size-[26px] shrink-0 items-center justify-center rounded-[10px] bg-[#F5F5F5]"
-    >
-      <span className="relative size-[14px] overflow-hidden">
-        <Image src={src} alt="" fill className="object-contain" unoptimized />
-      </span>
-      {badge && badge > 0 ? (
-        <span className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full bg-[#E95322] text-[9px] font-bold text-white">
-          {badge}
-        </span>
-      ) : null}
-    </Link>
+      <form
+        onSubmit={submit}
+        className="glass-enter glass-enter-delay-1 relative"
+      >
+        <Search
+          className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-white/45"
+          strokeWidth={1.75}
+        />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search your favorite food"
+          className="glass-panel h-12 w-full rounded-full border-0 pr-12 pl-11 text-[13px] font-medium text-white outline-none placeholder:text-white/40"
+        />
+        <button
+          type="submit"
+          className="absolute top-1/2 right-2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full text-white/70 transition hover:text-white"
+          aria-label="Search"
+        >
+          <SlidersHorizontal className="size-4" strokeWidth={1.75} />
+        </button>
+      </form>
+    </header>
   );
 }

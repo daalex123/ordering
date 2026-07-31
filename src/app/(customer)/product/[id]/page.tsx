@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Star } from "lucide-react";
+import { ChevronLeft, Heart, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import {
   formatMoney,
@@ -33,60 +33,81 @@ export default async function ProductPage({
       ? Math.min(...portions.map((p) => Number(p.price)))
       : Number(product.price);
 
+  const spicy =
+    /spicy|hot|chili|chilli|pepper/i.test(product.name) ||
+    /spicy|hot|chili|chilli/i.test(product.description ?? "");
+
   return (
-    <div className="flex flex-col">
-      <div className="relative bg-[var(--yum-yellow)] px-4 pt-4 pb-10">
-        <Link
-          href="/"
-          className="absolute top-5 left-4 z-10 text-primary"
-          aria-label="Back"
-        >
-          <ChevronLeft className="size-6" strokeWidth={2.5} />
-        </Link>
-        <div className="relative mx-auto mt-6 aspect-square max-w-[280px] overflow-hidden rounded-[30px] bg-white/30 shadow-lg">
-          {product.image_url ? (
-            <Image
-              src={product.image_url}
-              alt={product.name}
-              fill
-              className="object-cover"
-              unoptimized
-              priority
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
-              No photo
-            </div>
-          )}
+    <div className="relative flex min-h-full flex-col">
+      <div className="relative min-h-[48vh] overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,138,0,0.18),transparent_65%)]" />
+        {product.image_url ? (
+          <Image
+            src={product.image_url}
+            alt={product.name}
+            fill
+            className="object-contain object-center p-6 pt-16 pb-10"
+            unoptimized
+            priority
+          />
+        ) : (
+          <div className="flex h-full min-h-[48vh] items-center justify-center text-white/40">
+            No photo
+          </div>
+        )}
+
+        <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 pt-4">
+          <Link href="/" className="glass-icon-btn" aria-label="Back">
+            <ChevronLeft className="size-5" strokeWidth={2} />
+          </Link>
+          <button
+            type="button"
+            className="glass-icon-btn text-[var(--glass-danger)]"
+            aria-label="Favorite"
+          >
+            <Heart className="size-5 fill-current" strokeWidth={1.75} />
+          </button>
         </div>
       </div>
 
-      <div className="-mt-6 space-y-4 rounded-t-[30px] bg-white px-5 pt-6 pb-4">
+      <div className="glass-panel-strong relative z-10 -mt-8 flex flex-1 flex-col rounded-t-[32px] px-5 pt-6 pb-8">
+        {spicy ? (
+          <span className="mb-3 inline-flex w-fit rounded-full bg-[var(--glass-danger)] px-2.5 py-0.5 text-[11px] font-semibold text-white">
+            Spicy
+          </span>
+        ) : null}
+
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-[var(--yum-ink)]">
-                {product.name}
-              </h1>
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-white">
-                <Star className="size-3 fill-white" />
-                4.7
-              </span>
-            </div>
-            {product.description ? (
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {product.description}
+          <div className="min-w-0 space-y-1.5">
+            <h1 className="text-[24px] font-bold leading-tight text-white">
+              {product.name}
+            </h1>
+            {(product.is_best_seller || product.is_recommended) && (
+              <p className="flex items-center gap-1.5 text-[13px] text-white/60">
+                <Star className="size-3.5 fill-[var(--glass-accent)] text-[var(--glass-accent)]" />
+                <span>
+                  {product.is_best_seller ? "Best seller" : "Recommended"}
+                </span>
               </p>
-            ) : null}
+            )}
           </div>
-          <p className="shrink-0 text-xl font-bold text-primary">
+          <p className="shrink-0 text-[22px] font-bold text-[var(--glass-accent)]">
             {portions.length > 1 ? "From " : ""}
             {formatMoney(fromPrice)}
           </p>
         </div>
-        <AddToCartButton
-          product={{ ...product, product_portions: portions }}
-        />
+
+        {product.description ? (
+          <p className="mt-4 text-[13px] leading-relaxed text-white/55">
+            {product.description}
+          </p>
+        ) : null}
+
+        <div className="mt-5">
+          <AddToCartButton
+            product={{ ...product, product_portions: portions }}
+          />
+        </div>
       </div>
     </div>
   );

@@ -61,10 +61,10 @@ export function AddToCartButton({
   }
 
   return (
-    <div className="space-y-4 rounded-[24px] bg-[var(--yum-peach)]/40 p-4">
+    <div className="space-y-5">
       {portions.length > 0 ? (
-        <div className="space-y-2">
-          <Label className="text-[var(--yum-ink)]">Portion size</Label>
+        <div className="space-y-2.5">
+          <Label className="text-[13px] font-medium text-white/70">Size</Label>
           <div className="flex flex-wrap gap-2">
             {portions.map((portion) => {
               const active = (selected?.id ?? null) === portion.id;
@@ -74,14 +74,14 @@ export function AddToCartButton({
                   type="button"
                   onClick={() => setPortionId(portion.id)}
                   className={cn(
-                    "rounded-full border px-3.5 py-2 text-sm font-semibold transition",
+                    "rounded-full px-4 py-2 text-[13px] font-semibold transition",
                     active
-                      ? "border-primary bg-primary text-white"
-                      : "border-transparent bg-white text-[var(--yum-ink)]",
+                      ? "bg-[var(--glass-accent)] text-white shadow-[0_6px_16px_rgba(255,138,0,0.35)]"
+                      : "glass-panel text-white/80",
                   )}
                 >
                   {portion.name}
-                  <span className="ml-1.5 font-normal opacity-90">
+                  <span className="ml-1.5 font-normal opacity-80">
                     {formatMoney(Number(portion.price))}
                   </span>
                 </button>
@@ -91,30 +91,11 @@ export function AddToCartButton({
         </div>
       ) : null}
 
-      <div className="flex items-center justify-between">
-        <Label className="text-[var(--yum-ink)]">Quantity</Label>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="flex size-9 items-center justify-center rounded-full bg-white text-primary shadow-sm"
-            onClick={() => setQty((q) => Math.max(1, q - 1))}
-            aria-label="Decrease quantity"
-          >
-            <Minus className="size-4" />
-          </button>
-          <span className="w-6 text-center text-lg font-semibold">{qty}</span>
-          <button
-            type="button"
-            className="flex size-9 items-center justify-center rounded-full bg-primary text-white shadow-sm"
-            onClick={() => setQty((q) => q + 1)}
-            aria-label="Increase quantity"
-          >
-            <Plus className="size-4" />
-          </button>
-        </div>
-      </div>
       <div className="space-y-2">
-        <Label htmlFor="notes" className="text-[var(--yum-ink)]">
+        <Label
+          htmlFor="notes"
+          className="text-[13px] font-medium text-white/70"
+        >
           Special requests
         </Label>
         <Textarea
@@ -123,16 +104,42 @@ export function AddToCartButton({
           onChange={(e) => setNotes(e.target.value)}
           placeholder="No onions, extra spicy..."
           rows={2}
-          className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+          className="rounded-[20px] border-white/15 bg-white/8 text-white placeholder:text-white/35"
         />
       </div>
-      <button
-        type="button"
-        onClick={add}
-        className="w-full rounded-full bg-primary py-3.5 text-base font-semibold text-white shadow-md"
-      >
-        Add to cart · {formatMoney(unitPrice * qty)}
-      </button>
+
+      <div className="flex items-center gap-3 pt-1">
+        <div className="glass-panel flex h-12 items-center gap-3 rounded-full px-2">
+          <button
+            type="button"
+            className="flex size-9 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10"
+            onClick={() => setQty((q) => Math.max(1, q - 1))}
+            aria-label="Decrease quantity"
+          >
+            <Minus className="size-4" />
+          </button>
+          <span className="w-5 text-center text-[15px] font-semibold text-white">
+            {qty}
+          </span>
+          <button
+            type="button"
+            className="flex size-9 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10"
+            onClick={() => setQty((q) => q + 1)}
+            aria-label="Increase quantity"
+          >
+            <Plus className="size-4" />
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={add}
+          className="glass-cta flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-[20px] px-4 text-[15px] font-semibold"
+        >
+          <span>Add to Cart</span>
+          <span className="opacity-70">|</span>
+          <span>{formatMoney(unitPrice * qty)}</span>
+        </button>
+      </div>
     </div>
   );
 }

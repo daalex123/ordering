@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Heart, Home, ShoppingBag, ClipboardList } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import {
   formatBadgeCount,
@@ -11,10 +12,10 @@ import {
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "/", label: "Home", icon: "/yumquick/nav-home.svg" },
-  { href: "/cart", label: "Cart", icon: "/yumquick/nav-cart.svg" },
-  { href: "/orders", label: "Orders", icon: "/yumquick/nav-orders.svg" },
-  { href: "/profile", label: "Profile", icon: "/yumquick/nav-user.svg" },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/cart", label: "Cart", icon: ShoppingBag },
+  { href: "/orders", label: "Orders", icon: ClipboardList },
+  { href: "/profile", label: "Profile", icon: Heart },
 ];
 
 export function CustomerNav() {
@@ -27,11 +28,12 @@ export function CustomerNav() {
   if (pathname.startsWith("/welcome") || pathname.startsWith("/launch")) {
     return null;
   }
+  if (pathname.startsWith("/product/")) return null;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)]">
-      <ul className="mx-auto flex max-w-lg items-stretch justify-around rounded-t-[30px] bg-primary px-2 pt-3 pb-2.5 shadow-[0_-4px_16px_rgba(233,83,34,0.25)]">
-        {navLinks.map(({ href, label, icon }) => {
+    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <ul className="glass-panel pointer-events-auto mx-auto flex max-w-lg items-stretch justify-around rounded-[28px] px-2 py-2.5">
+        {navLinks.map(({ href, label, icon: Icon }) => {
           const active =
             href === "/"
               ? pathname === "/"
@@ -42,27 +44,25 @@ export function CustomerNav() {
                 href={href}
                 aria-label={label}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 px-2 py-1.5 transition-opacity",
-                  active ? "opacity-100" : "opacity-70 hover:opacity-100",
+                  "relative flex flex-col items-center gap-0.5 px-2 py-1.5 transition-colors",
+                  active ? "text-[var(--glass-accent)]" : "text-white/55",
                 )}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={icon}
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="h-6 w-auto object-contain"
-                  draggable={false}
+                <Icon
+                  className="size-5"
+                  strokeWidth={active ? 2.4 : 1.75}
+                  fill={
+                    active && href === "/profile" ? "currentColor" : "none"
+                  }
                 />
                 <span className="sr-only">{label}</span>
                 {href === "/cart" && count > 0 ? (
-                  <span className="absolute top-0 right-[calc(50%-14px)] flex size-4 items-center justify-center rounded-full bg-[var(--yum-yellow)] text-[9px] font-bold text-[var(--yum-ink)]">
+                  <span className="absolute top-0 right-[calc(50%-14px)] flex size-4 items-center justify-center rounded-full bg-[var(--glass-accent)] text-[9px] font-bold text-white">
                     {count}
                   </span>
                 ) : null}
                 {href === "/orders" && notifBadge ? (
-                  <span className="absolute top-0 right-[calc(50%-14px)] flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--yum-yellow)] px-1 text-[9px] font-bold text-[var(--yum-ink)]">
+                  <span className="absolute top-0 right-[calc(50%-14px)] flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--glass-accent)] px-1 text-[9px] font-bold text-white">
                     {notifBadge}
                   </span>
                 ) : null}

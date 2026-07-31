@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -76,20 +75,12 @@ export function NotificationBell({
         className={cn(
           "relative inline-flex items-center justify-center transition",
           variant === "customer"
-            ? "size-[26px] rounded-[10px] bg-[#F5F5F5]"
+            ? "glass-icon-btn size-11"
             : "size-8 rounded-full bg-[#f5f6fa] text-[#202224] hover:bg-[#eef0f5]",
         )}
       >
         {variant === "customer" ? (
-          <span className="relative size-[14px] overflow-hidden">
-            <Image
-              src="/yumquick/icon-bell.svg"
-              alt=""
-              fill
-              className="object-contain"
-              unoptimized
-            />
-          </span>
+          <Bell className="size-5 text-white" strokeWidth={1.75} />
         ) : (
           <Bell className="size-4" strokeWidth={1.75} />
         )}
@@ -98,7 +89,7 @@ export function NotificationBell({
             className={cn(
               "absolute flex items-center justify-center rounded-full bg-[#E95322] font-bold text-white",
               variant === "customer"
-                ? "-top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[9px]"
+                ? "-top-0.5 -right-0.5 h-4 min-w-4 px-1 text-[9px]"
                 : "-top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[9px]",
             )}
           >
@@ -157,7 +148,7 @@ export function NotificationBell({
                             {item.body}
                           </span>
                         ) : null}
-                        <span className="mt-1 block text-[10px] text-muted-foreground">
+                        <span className="mt-1 block text-[11px] text-muted-foreground">
                           {formatDistanceToNow(item.createdAt, {
                             addSuffix: true,
                           })}

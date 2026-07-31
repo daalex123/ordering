@@ -1,4 +1,15 @@
 import Link from "next/link";
+import Image from "next/image";
+import {
+  Beef,
+  Coffee,
+  Drumstick,
+  IceCream,
+  Pizza,
+  Salad,
+  UtensilsCrossed,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ProductCard } from "@/components/customer/product-card";
 import { HomeHeader } from "@/components/customer/home-header";
@@ -7,28 +18,29 @@ import type {
   ProductWithPortions,
   RestaurantSettings,
 } from "@/types/database";
+import { formatMoney } from "@/types/database";
 import { getBranding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
-const CATEGORY_ICONS = [
-  "/yumquick/cat-snacks.svg",
-  "/yumquick/cat-meal.svg",
-  "/yumquick/cat-vegan.svg",
-  "/yumquick/cat-dessert.svg",
-  "/yumquick/cat-drinks.svg",
-] as const;
+const CATEGORY_ICONS: LucideIcon[] = [
+  UtensilsCrossed,
+  Pizza,
+  Drumstick,
+  Beef,
+  Salad,
+  IceCream,
+  Coffee,
+];
 
-/** Match Figma Bot-menu icons by category name (not list index). */
-function iconForCategory(name: string, index: number): string {
+function iconForCategory(name: string, index: number): LucideIcon {
   const n = name.toLowerCase();
-  if (/snack|starter|appetizer|side/.test(n)) return "/yumquick/cat-snacks.svg";
-  if (/meal|main|entree|entrée|food/.test(n)) return "/yumquick/cat-meal.svg";
-  if (/vegan|veggie|vegetarian|salad|plant/.test(n))
-    return "/yumquick/cat-vegan.svg";
-  if (/dessert|sweet|cake|bakery|pastry/.test(n))
-    return "/yumquick/cat-dessert.svg";
-  if (/drink|beverage|juice|coffee|tea|cocktail/.test(n))
-    return "/yumquick/cat-drinks.svg";
+  if (/pizza/.test(n)) return Pizza;
+  if (/burger|beef|meat/.test(n)) return Beef;
+  if (/chicken|wing|drum/.test(n)) return Drumstick;
+  if (/vegan|veggie|vegetarian|salad|plant/.test(n)) return Salad;
+  if (/dessert|sweet|cake|bakery|pastry|ice/.test(n)) return IceCream;
+  if (/drink|beverage|juice|coffee|tea|cocktail/.test(n)) return Coffee;
+  if (/snack|fries|side|starter/.test(n)) return UtensilsCrossed;
   return CATEGORY_ICONS[index % CATEGORY_ICONS.length];
 }
 
@@ -36,6 +48,11 @@ function greetingForHour(hour: number) {
   if (hour < 12) return "Good Morning";
   if (hour < 17) return "Good Afternoon";
   return "Good Evening";
+}
+
+function firstNameFrom(fullName: string | null | undefined) {
+  if (!fullName?.trim()) return undefined;
+  return fullName.trim().split(/\s+/)[0];
 }
 
 export default async function MenuPage({
@@ -46,20 +63,37 @@ export default async function MenuPage({
   const params = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: settings }, { data: categories }, { data: products }] =
-    await Promise.all([
-      supabase.from("restaurant_settings").select("*").limit(1).maybeSingle(),
-      supabase
-        .from("categories")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order"),
-      supabase
-        .from("products")
-        .select("*, product_portions(id, price, is_available)")
-        .eq("is_available", true)
-        .order("sort_order"),
-    ]);
+  const [
+    { data: settings },
+    { data: categories },
+    { data: products },
+    {
+      data: { user },
+    },
+  ] = await Promise.all([
+    supabase.from("restaurant_settings").select("*").limit(1).maybeSingle(),
+    supabase
+      .from("categories")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order"),
+    supabase
+      .from("products")
+      .select("*, product_portions(id, price, is_available)")
+      .eq("is_available", true)
+      .order("sort_order"),
+    supabase.auth.getUser(),
+  ]);
+
+  let firstName: string | undefined;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle();
+    firstName = firstNameFrom(profile?.full_name);
+  }
 
   const restaurant = settings as RestaurantSettings | null;
   const branding = getBranding(restaurant);
@@ -83,14 +117,20 @@ export default async function MenuPage({
   const hour = new Date().getHours();
   const bestSellers = allItems.filter((p) => p.is_best_seller);
   const recommended = allItems.filter((p) => p.is_recommended);
+  const popular =
+    bestSellers.length > 0
+      ? bestSellers
+      : recommended.length > 0
+        ? recommended
+        : allItems.slice(0, 8);
+  const promo = bestSellers[0] ?? recommended[0] ?? allItems[0] ?? null;
   const fullMenuHref = "/?menu=1";
 
-  // Category chips — home uses real categories (no "All" tab), selected uses All + cats
   const homeChips = cats.map((cat, i) => ({
     id: cat.id,
     label: cat.name,
     href: `/?category=${cat.id}`,
-    icon: iconForCategory(cat.name, i),
+    Icon: iconForCategory(cat.name, i),
   }));
 
   const browseChips = [
@@ -98,7 +138,7 @@ export default async function MenuPage({
       id: null as string | null,
       label: "All",
       href: fullMenuHref,
-      icon: "/yumquick/cat-snacks.svg",
+      Icon: UtensilsCrossed,
     },
     ...homeChips.map((c) => ({ ...c, id: c.id as string | null })),
   ];
@@ -111,95 +151,88 @@ export default async function MenuPage({
         activeId={params.category ?? null}
         restaurant={restaurant}
         initialQuery={params.q ?? ""}
+        logoUrl={branding.logo_url}
+        restaurantName={branding.name}
       />
     );
   }
 
-  // ——— 9.1 Home (Figma 242:1715) ———
   return (
-    <div className="flex min-h-full flex-col bg-[#F5CB58]">
+    <div className="flex min-h-full flex-col">
+      {/*
+        THESIS: Dark warm glass stage — food floats over frost, orange commits action.
+        OWN-WORLD: Translucent panels, amber atmosphere, orange CTAs, circular food crops.
+        STORY: Guest greets, browses categories, grabs a promo or popular dish.
+        FIRST VIEWPORT: Greeting + headline, glass search, category row, promo banner.
+        FORM: Brief-pinned premium glassmorphism (Home + Product).
+      */}
       <HomeHeader
         greeting={greetingForHour(hour)}
-        tagline={restaurant?.eta_text || branding.tagline}
+        firstName={firstName}
         initialQuery={params.q ?? ""}
         logoUrl={branding.logo_url}
         restaurantName={branding.name}
       />
 
-      <div className="relative z-10 -mt-1 flex flex-1 flex-col rounded-t-[30px] bg-[#F5F5F5] px-5 pt-5 pb-6">
+      <div className="relative z-10 flex flex-1 flex-col px-5 pt-5 pb-6">
         {!restaurant?.is_open ? (
-          <p className="mb-4 rounded-2xl bg-[#FFDECF] px-3 py-2 text-sm text-[#391713]">
+          <p className="glass-panel mb-4 rounded-[20px] px-3 py-2 text-[13px] text-white/80">
             We&apos;re currently closed. You can browse the menu, but ordering
             is paused.
           </p>
         ) : null}
 
-        {/* Categories — none selected on home */}
-        <div className="grid grid-flow-col auto-cols-fr items-start justify-items-center gap-1 pb-3">
-          {homeChips.map((chip) => (
-            <Link
-              key={chip.id}
-              href={chip.href}
-              scroll={false}
-              className="flex w-full max-w-[64px] flex-col items-center gap-1.5 no-underline"
-            >
-              <span className="grid size-[49px] place-items-center rounded-full bg-[#F3E9B5]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={chip.icon}
-                  alt=""
-                  width={32}
-                  height={32}
-                  className="size-8 object-contain"
-                  draggable={false}
-                />
-              </span>
-              <span className="w-full text-center text-[12px] capitalize leading-none text-[#391713]">
-                {chip.label}
-              </span>
-            </Link>
-          ))}
+        <div className="glass-enter glass-enter-delay-1 -mx-1 flex gap-3 overflow-x-auto px-1 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {homeChips.map((chip) => {
+            const Icon = chip.Icon;
+            return (
+              <Link
+                key={chip.id}
+                href={chip.href}
+                scroll={false}
+                className="flex w-[68px] shrink-0 flex-col items-center gap-2 no-underline"
+              >
+                <span className="glass-panel grid size-[58px] place-items-center rounded-[20px] border text-white/80 transition hover:border-[var(--glass-accent)]/50 hover:text-white">
+                  <Icon className="size-6" strokeWidth={1.75} />
+                </span>
+                <span className="w-full truncate text-center text-[12px] capitalize text-white/75">
+                  {chip.label}
+                </span>
+              </Link>
+            );
+          })}
         </div>
 
-        <div className="mb-4 h-px w-full bg-[#FFD8C7]" />
+        {promo ? <PromoBanner product={promo} /> : null}
 
-        {/* Best Seller */}
-        {bestSellers.length > 0 ? (
-          <section className="space-y-3">
+        {popular.length > 0 ? (
+          <section className="glass-enter glass-enter-delay-3 mt-6 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-[20px] font-medium text-[#391713]">
-                Best Seller
+              <h2 className="text-[20px] font-semibold text-white">
+                Popular Now
               </h2>
               <Link
                 href={fullMenuHref}
-                className="flex items-center gap-1 text-[12px] font-semibold capitalize text-[#E95322]"
+                className="text-[13px] font-medium text-[var(--glass-accent)]"
               >
                 View All
-                <span aria-hidden className="text-sm">
-                  ›
-                </span>
               </Link>
             </div>
             <div className="flex snap-x gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {bestSellers.map((product) => (
+              {popular.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
-                  variant="seller"
+                  variant="popular"
                 />
               ))}
             </div>
           </section>
         ) : null}
 
-        <SectionDivider />
-
-        <FullMenuButton href={fullMenuHref} />
-
-        {/* Recommend */}
-        {recommended.length > 0 ? (
-          <section className="mt-5 space-y-3">
-            <h2 className="text-[20px] font-medium text-[#391713]">Recommend</h2>
+        {recommended.length > 0 && bestSellers.length > 0 ? (
+          <section className="mt-6 space-y-3">
+            <h2 className="text-[20px] font-semibold text-white">Recommend</h2>
             <div className="grid grid-cols-2 gap-3">
               {recommended.map((product) => (
                 <ProductCard
@@ -212,49 +245,57 @@ export default async function MenuPage({
           </section>
         ) : null}
 
-        <FullMenuButton href={fullMenuHref} className="mt-5" />
+        <Link
+          href={fullMenuHref}
+          className="glass-cta mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-[20px] text-[15px] font-semibold tracking-wide"
+        >
+          Full menu
+          <span aria-hidden>›</span>
+        </Link>
       </div>
     </div>
   );
 }
 
-function SectionDivider() {
-  return (
-    <div
-      className="my-6 flex items-center gap-3"
-      role="separator"
-      aria-hidden
-    >
-      <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#E95322]/45 to-[#E95322]/70" />
-      <span className="relative flex size-2.5 items-center justify-center">
-        <span className="absolute size-2.5 rotate-45 rounded-[2px] border border-[#E95322]/50 bg-[#FFDECF]" />
-        <span className="relative size-1 rotate-45 rounded-[1px] bg-[#E95322]" />
-      </span>
-      <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#E95322]/45 to-[#E95322]/70" />
-    </div>
+function PromoBanner({ product }: { product: ProductWithPortions }) {
+  const portions = (product.product_portions ?? []).filter(
+    (p) => p.is_available !== false,
   );
-}
+  const price =
+    portions.length > 0
+      ? Math.min(...portions.map((p) => Number(p.price)))
+      : Number(product.price);
 
-function FullMenuButton({
-  href,
-  className,
-}: {
-  href: string;
-  className?: string;
-}) {
   return (
-    <Link
-      href={href}
-      className={cn(
-        "flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#E95322] text-[15px] font-semibold tracking-wide text-white shadow-[0_8px_20px_rgba(233,83,34,0.28)] transition active:scale-[0.98]",
-        className,
-      )}
-    >
-      Full menu
-      <span aria-hidden className="text-lg leading-none">
-        ›
-      </span>
-    </Link>
+    <section className="glass-enter glass-enter-delay-2 glass-panel-strong relative overflow-hidden rounded-[28px] p-5">
+      <div className="relative z-10 max-w-[58%] space-y-2">
+        <p className="text-[11px] font-medium tracking-wide text-[var(--glass-accent)] uppercase">
+          Limited Time Offer
+        </p>
+        <h2 className="text-[20px] font-bold leading-tight text-white">
+          {product.name}
+        </h2>
+        <p className="text-[13px] text-white/60">{formatMoney(price)}</p>
+        <Link
+          href={`/product/${product.id}`}
+          className="glass-cta mt-2 inline-flex h-10 items-center rounded-[20px] px-5 text-[13px] font-semibold"
+        >
+          Order Now
+        </Link>
+      </div>
+      {product.image_url ? (
+        <div className="absolute -right-2 -bottom-4 size-40 overflow-hidden rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.45)] sm:size-44">
+          <Image
+            src={product.image_url}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="176px"
+            unoptimized
+          />
+        </div>
+      ) : null}
+    </section>
   );
 }
 
@@ -264,63 +305,57 @@ function CategoryBrowsePage({
   activeId,
   restaurant,
   initialQuery,
+  logoUrl,
+  restaurantName,
 }: {
   items: ProductWithPortions[];
-  chips: { id: string | null; label: string; href: string; icon: string }[];
+  chips: {
+    id: string | null;
+    label: string;
+    href: string;
+    Icon: LucideIcon;
+  }[];
   activeId: string | null;
   restaurant: RestaurantSettings | null;
   initialQuery: string;
+  logoUrl?: string | null;
+  restaurantName?: string;
 }) {
   return (
-    <div className="flex min-h-full flex-col bg-[#F5CB58]">
-      <HomeHeader initialQuery={initialQuery} compact />
+    <div className="flex min-h-full flex-col">
+      <HomeHeader
+        initialQuery={initialQuery}
+        compact
+        logoUrl={logoUrl}
+        restaurantName={restaurantName}
+      />
 
-      <div className="relative flex flex-1 flex-col rounded-t-[30px] bg-[#E95322]">
-        <nav className="relative z-20 grid grid-flow-col auto-cols-fr items-start justify-items-center gap-1 px-4 pt-4 pb-2">
+      <div className="relative flex flex-1 flex-col px-5 pt-2 pb-4">
+        <nav className="-mx-1 mb-4 flex gap-3 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {chips.map((chip) => {
             const active = chip.id === activeId;
+            const Icon = chip.Icon;
             return (
               <Link
                 key={chip.label + (chip.id ?? "all")}
                 href={chip.href}
                 scroll={false}
-                className={cn(
-                  "relative flex w-full max-w-[64px] flex-col items-center gap-1.5 pt-1 pb-3 no-underline",
-                  active && "z-30",
-                )}
+                className="flex w-[68px] shrink-0 flex-col items-center gap-2 no-underline"
               >
-                {active ? (
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-x-[-8px] -top-2 bottom-[-20px]"
-                  >
-                    <span className="absolute inset-0 rounded-t-[20px] bg-[#F5F5F5]" />
-                    <span className="absolute -bottom-0 -left-3 size-3 rounded-br-full shadow-[6px_0_0_0_#F5F5F5]" />
-                    <span className="absolute -right-3 -bottom-0 size-3 rounded-bl-full shadow-[-6px_0_0_0_#F5F5F5]" />
-                  </span>
-                ) : null}
                 <span
                   className={cn(
-                    "relative z-10 grid size-[49px] place-items-center rounded-full",
-                    active ? "bg-[#F5CB58]" : "bg-[#F3E9B5]",
+                    "grid size-[58px] place-items-center rounded-[20px] border transition",
+                    active
+                      ? "border-transparent bg-[var(--glass-accent)] text-white shadow-[0_8px_20px_rgba(255,138,0,0.35)]"
+                      : "glass-panel text-white/80",
                   )}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={chip.icon}
-                    alt=""
-                    width={32}
-                    height={32}
-                    className="size-8 object-contain"
-                    draggable={false}
-                  />
+                  <Icon className="size-6" strokeWidth={1.75} />
                 </span>
                 <span
                   className={cn(
-                    "relative z-10 w-full text-center text-[12px] capitalize leading-none",
-                    active
-                      ? "font-medium text-[#391713]"
-                      : "font-normal text-white",
+                    "w-full truncate text-center text-[12px] capitalize",
+                    active ? "font-semibold text-white" : "text-white/65",
                   )}
                 >
                   {chip.label}
@@ -330,46 +365,33 @@ function CategoryBrowsePage({
           })}
         </nav>
 
-        <div className="relative z-10 -mt-2 flex flex-1 flex-col rounded-t-[30px] bg-[#F5F5F5] px-5 pt-5 pb-4">
-          {!restaurant?.is_open ? (
-            <p className="mb-4 rounded-2xl bg-[#FFDECF] px-3 py-2 text-sm text-[#391713]">
-              We&apos;re currently closed. You can browse the menu, but ordering
-              is paused.
-            </p>
-          ) : null}
+        {!restaurant?.is_open ? (
+          <p className="glass-panel mb-4 rounded-[20px] px-3 py-2 text-[13px] text-white/80">
+            We&apos;re currently closed. You can browse the menu, but ordering
+            is paused.
+          </p>
+        ) : null}
 
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-[12px] font-light capitalize">
-              <span className="text-[#070707]">Sort by </span>
-              <span className="text-[#E95322]">Popular</span>
-            </p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/yumquick/sort-filter.svg"
-              alt=""
-              width={20}
-              height={20}
-              className="size-5"
-            />
-          </div>
-
-          {items.length === 0 ? (
-            <p className="py-12 text-center text-sm text-muted-foreground">
-              No dishes match your search.
-            </p>
-          ) : (
-            <ul>
-              {items.map((product, i) => (
-                <li key={product.id}>
-                  <ProductCard product={product} />
-                  {i < items.length - 1 ? (
-                    <div className="my-5 h-px w-full bg-[#FFD8C7]" />
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="mb-4 flex items-center justify-between">
+          <p className="text-[12px] font-light">
+            <span className="text-white/55">Sort by </span>
+            <span className="text-[var(--glass-accent)]">Popular</span>
+          </p>
         </div>
+
+        {items.length === 0 ? (
+          <p className="py-12 text-center text-[14px] text-white/50">
+            No dishes match your search.
+          </p>
+        ) : (
+          <ul className="space-y-4">
+            {items.map((product) => (
+              <li key={product.id}>
+                <ProductCard product={product} />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
