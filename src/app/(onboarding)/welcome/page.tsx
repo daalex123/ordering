@@ -12,7 +12,6 @@ import {
 
 const ONBOARDED_KEY = "kb_onboarded";
 const DISMISS_KEY = "kb_install_dismissed";
-const PENDING_INSTALL_KEY = "kb_pending_install";
 
 function isStandaloneDisplay() {
   return (
@@ -38,6 +37,7 @@ export default function WelcomePage() {
   );
   const [iosHint, setIosHint] = useState(false);
   const [installing, setInstalling] = useState(false);
+  const [waitingForPrompt, setWaitingForPrompt] = useState(true);
 
   useEffect(() => {
     return subscribeDeferredInstallPrompt(setDeferred);
@@ -48,11 +48,9 @@ export default function WelcomePage() {
       try {
         window.localStorage.setItem(ONBOARDED_KEY, "1");
         if (isStandaloneDisplay()) {
-          window.localStorage.removeItem(PENDING_INSTALL_KEY);
           router.replace("/");
           return;
         }
-        window.localStorage.setItem(PENDING_INSTALL_KEY, "1");
         setIosHint(detectIosSafari());
         setPhase("install");
       } catch {
@@ -62,10 +60,28 @@ export default function WelcomePage() {
     return () => window.clearTimeout(timer);
   }, [router]);
 
-  function finish() {
+  // Give the service worker a moment to become installable before fallback copy.
+  useEffect(() => {
+    if (phase !== "install" || iosHint) {
+      setWaitingForPrompt(false);
+      return;
+    }
+    if (deferred) {
+      setWaitingForPrompt(false);
+      return;
+    }
+    setWaitingForPrompt(true);
+    const timer = window.setTimeout(() => setWaitingForPrompt(false), 2500);
+    return () => window.clearTimeout(timer);
+  }, [phase, iosHint, deferred]);
+
+  function goToMenu() {
+    router.replace("/");
+  }
+
+  function finishInstalled() {
     try {
       window.localStorage.setItem(DISMISS_KEY, "1");
-      window.localStorage.removeItem(PENDING_INSTALL_KEY);
     } catch {
       /* ignore */
     }
@@ -78,8 +94,12 @@ export default function WelcomePage() {
     setInstalling(true);
     try {
       await promptEvent.prompt();
-      await promptEvent.userChoice;
-      finish();
+      const choice = await promptEvent.userChoice;
+      if (choice.outcome === "accepted") {
+        finishInstalled();
+      } else {
+        setInstalling(false);
+      }
     } catch {
       setInstalling(false);
     }
@@ -142,14 +162,20 @@ export default function WelcomePage() {
           >
             {installing ? "Installing…" : "Download app"}
           </button>
+        ) : waitingForPrompt ? (
+          <button
+            type="button"
+            disabled
+            className="flex h-12 items-center justify-center rounded-full bg-[#E95322] text-base font-semibold text-white opacity-70"
+          >
+            Preparing download…
+          </button>
         ) : (
           <div className="rounded-2xl bg-[#391713] px-4 py-3 text-left text-sm text-white">
             <p className="font-semibold">Install from your browser</p>
             <p className="mt-1 text-white/75">
               Open the browser menu and choose{" "}
-              <span className="font-semibold text-[#F5CB58]">
-                Install app
-              </span>{" "}
+              <span className="font-semibold text-[#F5CB58]">Install app</span>{" "}
               or{" "}
               <span className="font-semibold text-[#F5CB58]">
                 Add to Home Screen
@@ -161,7 +187,7 @@ export default function WelcomePage() {
 
         <button
           type="button"
-          onClick={finish}
+          onClick={goToMenu}
           className="flex h-12 items-center justify-center rounded-full bg-white text-base font-semibold text-[#391713]"
         >
           Continue to menu

@@ -4,8 +4,8 @@ import withSerwistInit from "@serwist/next";
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
-  // Service worker (required for installability) is off in `next dev`.
-  // Use a production build / HTTPS deploy to get the install prompt.
+  // Service worker (Serwist) is off in `next dev`; a minimal `/sw-dev.js`
+  // is registered instead so Chrome can still fire `beforeinstallprompt`.
   disable: process.env.NODE_ENV === "development",
 });
 

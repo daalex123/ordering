@@ -10,7 +10,6 @@ import {
 } from "@/lib/pwa-install";
 
 const DISMISS_KEY = "kb_install_dismissed";
-export const PENDING_INSTALL_KEY = "kb_pending_install";
 
 function isStandaloneDisplay() {
   return (
@@ -28,6 +27,14 @@ function shouldHideOnPath(pathname: string) {
   );
 }
 
+function detectIosSafari() {
+  const ua = window.navigator.userAgent;
+  const isIos = /iPad|iPhone|iPod/.test(ua);
+  const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+  return isIos && isSafari;
+}
+
+/** Bottom install banner for visitors who have not installed yet. */
 export function InstallPrompt() {
   const pathname = usePathname();
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
@@ -38,7 +45,6 @@ export function InstallPrompt() {
 
   useEffect(() => subscribeDeferredInstallPrompt(setDeferred), []);
 
-  // Reminder banner if the user skipped the welcome install step.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (shouldHideOnPath(pathname)) {
@@ -49,32 +55,43 @@ export function InstallPrompt() {
 
     try {
       if (window.localStorage.getItem(DISMISS_KEY) === "1") return;
-      if (window.localStorage.getItem(PENDING_INSTALL_KEY) !== "1") return;
     } catch {
-      return;
+      /* private mode — still show */
     }
 
     if (isStandaloneDisplay()) return;
 
-    const ua = window.navigator.userAgent;
-    const isIos = /iPad|iPhone|iPod/.test(ua);
-    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
-
+    const ios = detectIosSafari();
     const timer = window.setTimeout(() => {
-      if (isIos && isSafari) {
+      if (ios) {
         setIosHint(true);
+        setVisible(false);
       } else {
+        setIosHint(false);
         setVisible(true);
       }
-    }, 600);
+    }, 800);
 
     return () => window.clearTimeout(timer);
   }, [pathname]);
 
+  // Show as soon as Chrome hands us an install event (even before the delay).
+  useEffect(() => {
+    if (!deferred) return;
+    if (shouldHideOnPath(pathname)) return;
+    if (isStandaloneDisplay()) return;
+    try {
+      if (window.localStorage.getItem(DISMISS_KEY) === "1") return;
+    } catch {
+      /* ignore */
+    }
+    setVisible(true);
+    setIosHint(false);
+  }, [deferred, pathname]);
+
   function dismiss() {
     try {
       window.localStorage.setItem(DISMISS_KEY, "1");
-      window.localStorage.removeItem(PENDING_INSTALL_KEY);
     } catch {
       /* ignore */
     }
@@ -109,7 +126,9 @@ export function InstallPrompt() {
           <p className="text-[11px] leading-snug text-white/75">
             {iosHint
               ? "Tap Share, then Add to Home Screen"
-              : "Add to your home screen for quicker ordering"}
+              : deferred
+                ? "Add to your home screen for quicker ordering"
+                : "Open the browser menu → Install app"}
           </p>
         </div>
         {deferred && !iosHint ? (
@@ -118,7 +137,7 @@ export function InstallPrompt() {
             onClick={() => void install()}
             className="shrink-0 rounded-full bg-[#F5CB58] px-3 py-1.5 text-xs font-bold text-[#391713]"
           >
-            Download
+            Install
           </button>
         ) : null}
         <button
