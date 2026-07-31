@@ -9,6 +9,10 @@
   "background_color": "#F5CB58",
   "theme_color": "#E95322",
   "orientation": "portrait-primary",
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "icons": [
     {
       "src": "/icons/icon-192.png",

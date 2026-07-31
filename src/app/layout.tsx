@@ -5,6 +5,7 @@ import { SerwistProvider } from "@serwist/next/react";
 import { BrandingProvider } from "@/components/branding-provider";
 import { InstallPrompt } from "@/components/customer/install-prompt";
 import { DevSwRegister } from "@/components/customer/dev-sw-register";
+import { PwaLaunchHandler } from "@/components/pwa-launch-handler";
 import { createClient } from "@/lib/supabase/server";
 import { getBranding } from "@/lib/branding";
 import type { RestaurantSettings } from "@/types/database";
@@ -104,6 +105,7 @@ export default function RootLayout({
         >
           <BrandingProvider>
             {process.env.NODE_ENV === "development" ? <DevSwRegister /> : null}
+            <PwaLaunchHandler />
             {children}
             <InstallPrompt />
             <Toaster richColors position="top-center" />

@@ -64,13 +64,35 @@ export function placedSmsMessage(order: Order, restaurantName: string): string {
   return `${restaurantName}: New order #${ticket} · ${who} · ${type} · ${formatMoney(Number(order.total))}. Open admin to confirm.`;
 }
 
+/** Public app origin for SMS deep links (no trailing slash). */
+export function appBaseUrl(): string {
+  const explicit =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.APP_URL?.trim() ||
+    "";
+  if (explicit) return explicit.replace(/\/$/, "");
+
+  const vercel = process.env.VERCEL_URL?.trim();
+  if (vercel) {
+    const host = vercel.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    return `https://${host}`;
+  }
+
+  return "http://localhost:3000";
+}
+
+export function orderViewUrl(orderId: string): string {
+  return `${appBaseUrl()}/orders/${orderId}`;
+}
+
 export function completedSmsMessage(
   order: Order,
   restaurantName: string,
 ): string {
   const ticket = orderTicketLabel(order);
   const type = order.fulfillment_type === "delivery" ? "delivered" : "ready";
-  return `${restaurantName}: Your order #${ticket} is ${type}. Thank you!`;
+  const link = orderViewUrl(order.id);
+  return `${restaurantName}: Your order #${ticket} is ${type}. View it here: ${link}`;
 }
 
 export async function sendOrderPlacedSms(order: Order) {
