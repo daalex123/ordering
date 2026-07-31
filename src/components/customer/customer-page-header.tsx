@@ -14,22 +14,20 @@ export function CustomerPageHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <header
-      className={cn(
-        "relative bg-[var(--yum-yellow)] px-5 pt-4 pb-8 text-center",
-        className,
-      )}
-    >
-      {backHref ? (
-        <Link
-          href={backHref}
-          className="absolute top-5 left-5 text-primary"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="size-6" strokeWidth={2.5} />
-        </Link>
-      ) : null}
-      <h1 className="text-[28px] font-bold tracking-tight text-white">{title}</h1>
+    <header className={cn("relative px-5 pt-4 pb-4", className)}>
+      <div className="flex items-center gap-3">
+        {backHref ? (
+          <Link href={backHref} className="glass-icon-btn" aria-label="Go back">
+            <ChevronLeft className="size-5" strokeWidth={2} />
+          </Link>
+        ) : (
+          <span className="size-11" aria-hidden />
+        )}
+        <h1 className="flex-1 text-center text-[22px] font-bold tracking-tight text-white">
+          {title}
+        </h1>
+        <span className="size-11" aria-hidden />
+      </div>
       {children}
     </header>
   );

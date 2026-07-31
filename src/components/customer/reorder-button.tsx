@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { OrderItem } from "@/types/database";
 import { useCart } from "@/lib/cart-store";
-import { Button } from "@/components/ui/button";
 
 export function ReorderButton({ items }: { items: OrderItem[] }) {
   const addItem = useCart((s) => s.addItem);
@@ -29,8 +28,12 @@ export function ReorderButton({ items }: { items: OrderItem[] }) {
   }
 
   return (
-    <Button className="w-full" onClick={reorder}>
+    <button
+      type="button"
+      className="glass-cta w-full rounded-[20px] py-3 text-[15px] font-semibold"
+      onClick={reorder}
+    >
       Reorder
-    </Button>
+    </button>
   );
 }

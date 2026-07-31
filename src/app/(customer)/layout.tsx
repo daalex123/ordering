@@ -11,7 +11,7 @@ export default function CustomerLayout({
     <OnboardingGate>
       <OrderCompletedAlerts />
       <div className="storefront-glass mx-auto flex min-h-full w-full max-w-lg flex-1 flex-col">
-        <main className="flex min-h-0 flex-1 flex-col pb-28">{children}</main>
+        <main className="flex min-h-0 flex-1 flex-col pb-32">{children}</main>
         <CustomerNav />
       </div>
     </OnboardingGate>

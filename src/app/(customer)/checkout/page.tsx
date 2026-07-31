@@ -23,6 +23,10 @@ import {
 } from "@/components/ui/select";
 import { CustomerPageHeader } from "@/components/customer/customer-page-header";
 import { notifyOrderSms } from "@/lib/notify-order-sms";
+import { cn } from "@/lib/utils";
+
+const glassField =
+  "rounded-[20px] border border-white/15 bg-white/8 text-white placeholder:text-white/35 focus-visible:ring-[var(--glass-accent)]";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -77,13 +81,13 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div>
-        <CustomerPageHeader title="Checkout" backHref="/cart" />
-        <div className="-mt-4 rounded-t-[30px] bg-white px-5 py-16 text-center">
-          <p className="font-medium text-[var(--yum-ink)]">Cart is empty</p>
+      <div className="px-5 pb-6">
+        <CustomerPageHeader title="Checkout" backHref="/cart" className="px-0" />
+        <div className="glass-panel-strong rounded-[28px] px-5 py-16 text-center">
+          <p className="text-[18px] font-semibold text-white">Cart is empty</p>
           <button
             type="button"
-            className="mt-4 rounded-full bg-primary px-8 py-3 font-semibold text-white"
+            className="glass-cta mt-5 inline-flex h-12 items-center rounded-[20px] px-8 text-[15px] font-semibold"
             onClick={() => router.push("/")}
           >
             Browse menu
@@ -200,32 +204,40 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div>
-      <CustomerPageHeader title="Checkout" backHref="/cart" />
+    <div className="px-5 pb-6">
+      <CustomerPageHeader title="Checkout" backHref="/cart" className="px-0" />
       <form
         onSubmit={placeOrder}
-        className="-mt-4 space-y-5 rounded-t-[30px] bg-white px-5 pt-6 pb-8"
+        className="glass-panel-strong space-y-5 rounded-[28px] px-4 pt-5 pb-5"
       >
-        <div className="space-y-2">
-          <Label className="font-semibold text-[var(--yum-ink)]">
+        <div className="space-y-2.5">
+          <Label className="text-[13px] font-medium text-white/70">
             Fulfillment
           </Label>
-          <Select
-            value={fulfillment}
-            onValueChange={(v) => {
-              if (v) setFulfillment(v as FulfillmentType);
-            }}
-          >
-            <SelectTrigger className="rounded-2xl border-0 bg-[var(--yum-cream)]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pickup">Pickup</SelectItem>
-              {settings?.delivery_enabled ? (
-                <SelectItem value="delivery">Delivery</SelectItem>
-              ) : null}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                ["pickup", "Pickup"],
+                ...(settings?.delivery_enabled
+                  ? ([["delivery", "Delivery"]] as const)
+                  : []),
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFulfillment(value)}
+                className={cn(
+                  "rounded-[20px] py-3 text-[14px] font-semibold transition",
+                  fulfillment === value
+                    ? "bg-[var(--glass-accent)] text-white shadow-[0_6px_16px_rgba(255,138,0,0.35)]"
+                    : "glass-panel text-white/75",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="grid gap-3">
@@ -233,7 +245,7 @@ export default function CheckoutPage() {
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+              className={glassField}
             />
           </Field>
           <Field label="Phone *">
@@ -241,26 +253,26 @@ export default function CheckoutPage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
-              className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+              className={glassField}
             />
           </Field>
         </div>
 
         {fulfillment === "delivery" ? (
-          <div className="grid gap-3 rounded-[24px] bg-[var(--yum-peach)]/50 p-4">
+          <div className="glass-panel grid gap-3 rounded-[20px] p-4">
             <Field label="Address line 1 *">
               <Input
                 value={line1}
                 onChange={(e) => setLine1(e.target.value)}
                 required
-                className="rounded-2xl border-0 bg-white"
+                className={glassField}
               />
             </Field>
             <Field label="Address line 2">
               <Input
                 value={line2}
                 onChange={(e) => setLine2(e.target.value)}
-                className="rounded-2xl border-0 bg-white"
+                className={glassField}
               />
             </Field>
             <Field label="City *">
@@ -268,21 +280,23 @@ export default function CheckoutPage() {
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 required
-                className="rounded-2xl border-0 bg-white"
+                className={glassField}
               />
             </Field>
           </div>
         ) : null}
 
         <div className="space-y-2">
-          <Label className="font-semibold text-[var(--yum-ink)]">Payment</Label>
+          <Label className="text-[13px] font-medium text-white/70">
+            Payment
+          </Label>
           <Select
             value={payment}
             onValueChange={(v) => {
               if (v) setPayment(v as PaymentMethod);
             }}
           >
-            <SelectTrigger className="rounded-2xl border-0 bg-[var(--yum-cream)]">
+            <SelectTrigger className={cn(glassField, "h-11")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -300,11 +314,11 @@ export default function CheckoutPage() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+            className={glassField}
           />
         </Field>
 
-        <div className="space-y-2 rounded-[24px] bg-primary p-4 text-sm text-white">
+        <div className="glass-panel space-y-2 rounded-[20px] p-4 text-[14px] text-white/80">
           <div className="flex justify-between">
             <span>Subtotal</span>
             <span>{formatMoney(cartSubtotal)}</span>
@@ -313,16 +327,18 @@ export default function CheckoutPage() {
             <span>Delivery</span>
             <span>{formatMoney(deliveryFee)}</span>
           </div>
-          <div className="flex justify-between border-t border-dashed border-white/40 pt-2 text-base font-bold">
+          <div className="flex justify-between border-t border-dashed border-white/20 pt-2 text-[16px] font-bold text-white">
             <span>Total</span>
-            <span>{formatMoney(total)}</span>
+            <span className="text-[var(--glass-accent)]">
+              {formatMoney(total)}
+            </span>
           </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-[var(--yum-yellow)] py-3.5 text-base font-semibold text-primary disabled:opacity-60"
+          className="glass-cta w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
         >
           {loading ? "Placing order..." : "Place order"}
         </button>
@@ -340,7 +356,7 @@ function Field({
 }) {
   return (
     <div className="space-y-2">
-      <Label className="font-semibold text-[var(--yum-ink)]">{label}</Label>
+      <Label className="text-[13px] font-medium text-white/70">{label}</Label>
       {children}
     </div>
   );

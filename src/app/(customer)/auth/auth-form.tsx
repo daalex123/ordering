@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -9,8 +10,16 @@ import { Label } from "@/components/ui/label";
 import { CustomerPageHeader } from "@/components/customer/customer-page-header";
 import { cn } from "@/lib/utils";
 
+const glassField =
+  "h-12 rounded-[20px] border border-white/15 bg-white/8 text-white placeholder:text-white/35 focus-visible:ring-[var(--glass-accent)]";
+
 function safeNextPath(raw: string | null): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/auth")) {
+  if (
+    !raw ||
+    !raw.startsWith("/") ||
+    raw.startsWith("//") ||
+    raw.startsWith("/auth")
+  ) {
     return "/";
   }
   if (raw === "/profile" || raw.startsWith("/profile/")) {
@@ -85,7 +94,9 @@ export default function AuthForm() {
       setMaskedPhone(data.masked || data.sentTo || phone);
       setStep("otp");
       setResendIn(data.resendAfterSec ?? 30);
-      toast.success(`Code sent to ${data.masked || data.sentTo || "your phone"}`);
+      toast.success(
+        `Code sent to ${data.masked || data.sentTo || "your phone"}`,
+      );
     } catch {
       toast.error("Could not send code");
     } finally {
@@ -148,7 +159,6 @@ export default function AuthForm() {
       return;
     }
 
-    // Staff accounts should use the admin console login
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
@@ -194,17 +204,35 @@ export default function AuthForm() {
         : "Sign Up";
 
   return (
-    <div>
-      <CustomerPageHeader title={title} backHref="/" />
-      <div className="-mt-4 rounded-t-[30px] bg-white px-6 pt-7 pb-10">
-        <div className="mb-5 flex rounded-full bg-[var(--yum-cream)] p-1">
+    <div className="px-5 pb-8">
+      <CustomerPageHeader title={title} backHref="/" className="px-0" />
+
+      <div className="glass-panel-strong relative overflow-hidden rounded-[28px] px-5 pt-6 pb-7">
+        <div className="pointer-events-none absolute -top-16 -right-10 size-40 rounded-full bg-[var(--glass-accent)]/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-10 size-36 rounded-full bg-[var(--glass-accent)]/10 blur-3xl" />
+
+        <div className="relative z-10 mb-5 flex flex-col items-center gap-2 text-center">
+          <div className="relative size-14 overflow-hidden rounded-[16px] border border-white/20 bg-white/10 shadow-lg">
+            <Image
+              src="/logo-kings-bakamuna.png"
+              alt="Kings Bakamuna"
+              fill
+              className="object-cover"
+              unoptimized
+              priority
+            />
+          </div>
+          <p className="text-[13px] text-white/55">Kings Bakamuna</p>
+        </div>
+
+        <div className="relative z-10 mb-5 flex rounded-full border border-white/15 bg-white/8 p-1">
           <button
             type="button"
             className={cn(
-              "flex-1 rounded-full py-2 text-sm font-semibold",
+              "flex-1 rounded-full py-2.5 text-[13px] font-semibold transition",
               method === "phone"
-                ? "bg-primary text-white"
-                : "text-[var(--yum-ink)]",
+                ? "bg-[var(--glass-accent)] text-white shadow-[0_6px_16px_rgba(255,138,0,0.35)]"
+                : "text-white/60",
             )}
             onClick={() => {
               setMethod("phone");
@@ -216,10 +244,10 @@ export default function AuthForm() {
           <button
             type="button"
             className={cn(
-              "flex-1 rounded-full py-2 text-sm font-semibold",
+              "flex-1 rounded-full py-2.5 text-[13px] font-semibold transition",
               method === "email"
-                ? "bg-primary text-white"
-                : "text-[var(--yum-ink)]",
+                ? "bg-[var(--glass-accent)] text-white shadow-[0_6px_16px_rgba(255,138,0,0.35)]"
+                : "text-white/60",
             )}
             onClick={() => {
               setMethod("email");
@@ -230,15 +258,15 @@ export default function AuthForm() {
           </button>
         </div>
 
-        <div className="mb-6 space-y-2">
-          <h2 className="text-[28px] font-bold text-[var(--yum-ink)]">
+        <div className="relative z-10 mb-6 space-y-1.5">
+          <h2 className="text-[24px] font-bold text-white">
             {method === "phone" && step === "otp"
               ? "Verify number"
               : mode === "signin"
                 ? "Welcome"
                 : "Create account"}
           </h2>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <p className="text-[13px] leading-relaxed text-white/55">
             {method === "phone" && step === "otp"
               ? `We sent a 6-digit code to ${maskedPhone}.`
               : method === "phone"
@@ -250,23 +278,17 @@ export default function AuthForm() {
         </div>
 
         {method === "phone" && step === "phone" ? (
-          <form onSubmit={sendOtp} className="space-y-4">
+          <form onSubmit={sendOtp} className="relative z-10 space-y-4">
             {mode === "signup" ? (
-              <div className="space-y-2">
-                <Label className="font-semibold text-[var(--yum-ink)]">
-                  Full name
-                </Label>
+              <Field label="Full name">
                 <Input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="h-12 rounded-2xl border-0 bg-[var(--yum-cream)]"
+                  className={glassField}
                 />
-              </div>
+              </Field>
             ) : null}
-            <div className="space-y-2">
-              <Label className="font-semibold text-[var(--yum-ink)]">
-                Mobile number
-              </Label>
+            <Field label="Mobile number">
               <Input
                 type="tel"
                 required
@@ -275,13 +297,13 @@ export default function AuthForm() {
                 placeholder="07XXXXXXXX"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="h-12 rounded-2xl border-0 bg-[var(--yum-cream)]"
+                className={glassField}
               />
-            </div>
+            </Field>
             <button
               type="submit"
               disabled={loading || resendIn > 0}
-              className="mt-2 w-full rounded-full bg-primary py-3.5 text-base font-semibold text-white disabled:opacity-60"
+              className="glass-cta mt-2 w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
             >
               {loading
                 ? "Sending..."
@@ -293,11 +315,8 @@ export default function AuthForm() {
         ) : null}
 
         {method === "phone" && step === "otp" ? (
-          <form onSubmit={verifyOtp} className="space-y-4">
-            <div className="space-y-2">
-              <Label className="font-semibold text-[var(--yum-ink)]">
-                Verification code
-              </Label>
+          <form onSubmit={verifyOtp} className="relative z-10 space-y-4">
+            <Field label="Verification code">
               <Input
                 type="text"
                 required
@@ -310,19 +329,22 @@ export default function AuthForm() {
                 onChange={(e) =>
                   setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
                 }
-                className="h-12 rounded-2xl border-0 bg-[var(--yum-cream)] tracking-[0.4em] text-center text-lg"
+                className={cn(
+                  glassField,
+                  "text-center text-[18px] tracking-[0.4em]",
+                )}
               />
-            </div>
+            </Field>
             <button
               type="submit"
               disabled={loading || otp.length !== 6}
-              className="mt-2 w-full rounded-full bg-primary py-3.5 text-base font-semibold text-white disabled:opacity-60"
+              className="glass-cta mt-2 w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
             >
               {loading ? "Verifying..." : "Verify & continue"}
             </button>
             <button
               type="button"
-              className="w-full text-sm font-semibold text-primary disabled:opacity-50"
+              className="w-full text-[13px] font-semibold text-[var(--glass-accent)] disabled:opacity-50"
               disabled={loading || resendIn > 0}
               onClick={() => void sendOtp()}
             >
@@ -330,7 +352,7 @@ export default function AuthForm() {
             </button>
             <button
               type="button"
-              className="w-full text-sm font-semibold text-muted-foreground"
+              className="w-full text-[13px] font-medium text-white/45"
               disabled={loading}
               onClick={() => {
                 setOtp("");
@@ -345,35 +367,28 @@ export default function AuthForm() {
         {method === "email" ? (
           <form
             onSubmit={mode === "signin" ? signInEmail : signUpEmail}
-            className="space-y-4"
+            className="relative z-10 space-y-4"
           >
             {mode === "signup" ? (
-              <div className="space-y-2">
-                <Label className="font-semibold text-[var(--yum-ink)]">
-                  Full name
-                </Label>
+              <Field label="Full name">
                 <Input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="h-12 rounded-2xl border-0 bg-[var(--yum-cream)]"
+                  className={glassField}
                 />
-              </div>
+              </Field>
             ) : null}
-            <div className="space-y-2">
-              <Label className="font-semibold text-[var(--yum-ink)]">Email</Label>
+            <Field label="Email">
               <Input
                 type="email"
                 required
                 placeholder="example@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-12 rounded-2xl border-0 bg-[var(--yum-cream)]"
+                className={glassField}
               />
-            </div>
-            <div className="space-y-2">
-              <Label className="font-semibold text-[var(--yum-ink)]">
-                Password
-              </Label>
+            </Field>
+            <Field label="Password">
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
@@ -381,21 +396,21 @@ export default function AuthForm() {
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 rounded-2xl border-0 bg-[var(--yum-cream)] pr-12"
+                  className={cn(glassField, "pr-14")}
                 />
                 <button
                   type="button"
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-primary"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-[12px] font-semibold text-[var(--glass-accent)]"
                   onClick={() => setShowPassword((v) => !v)}
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
-            </div>
+            </Field>
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 w-full rounded-full bg-primary py-3.5 text-base font-semibold text-white disabled:opacity-60"
+              className="glass-cta mt-2 w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
             >
               {loading
                 ? mode === "signin"
@@ -408,11 +423,13 @@ export default function AuthForm() {
           </form>
         ) : null}
 
-        <p className="mt-6 text-center text-sm text-[var(--yum-ink)]">
-          {mode === "signin" ? "Don't have an account? " : "Already registered? "}
+        <p className="relative z-10 mt-6 text-center text-[13px] text-white/70">
+          {mode === "signin"
+            ? "Don't have an account? "
+            : "Already registered? "}
           <button
             type="button"
-            className="font-bold text-primary"
+            className="font-bold text-[var(--glass-accent)]"
             onClick={() => {
               setMode(mode === "signin" ? "signup" : "signin");
               setStep(method === "phone" ? "phone" : "email");
@@ -422,13 +439,31 @@ export default function AuthForm() {
             {mode === "signin" ? "Sign Up" : "Log In"}
           </button>
         </p>
-        <p className="mt-3 text-center text-xs text-muted-foreground">
+        <p className="relative z-10 mt-3 text-center text-[12px] text-white/40">
           Restaurant staff?{" "}
-          <a href="/admin/login" className="font-semibold text-primary">
+          <a
+            href="/admin/login"
+            className="font-semibold text-[var(--glass-accent)]"
+          >
             Admin login
           </a>
         </p>
       </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-[13px] font-medium text-white/70">{label}</Label>
+      {children}
     </div>
   );
 }

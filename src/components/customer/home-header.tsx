@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, Search, SlidersHorizontal } from "lucide-react";
+import { Menu, Search, SlidersHorizontal, User } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ export function HomeHeader({
   greeting,
   firstName,
   headline,
+  tagline,
   initialQuery,
   compact = false,
   logoUrl,
@@ -20,6 +21,7 @@ export function HomeHeader({
   greeting?: string;
   firstName?: string;
   headline?: string;
+  tagline?: string;
   initialQuery: string;
   compact?: boolean;
   logoUrl?: string | null;
@@ -38,10 +40,11 @@ export function HomeHeader({
   }
 
   const displayName = firstName || "there";
+  const brand = restaurantName || "Restaurant";
 
   return (
     <header className={cn("px-5 pt-4", compact ? "pb-3" : "pb-2")}>
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <Link
           href="/?menu=1"
           className="glass-icon-btn"
@@ -53,40 +56,60 @@ export function HomeHeader({
           <NotificationBell scope="customer" variant="customer" />
           <Link
             href="/profile"
-            className="relative size-11 overflow-hidden rounded-full border border-white/20 shadow-lg"
+            className="glass-icon-btn"
             aria-label="Profile"
           >
-            <Image
-              src={logoUrl || "/logo-kings-bakamuna.png"}
-              alt={restaurantName || "Profile"}
-              fill
-              className="object-cover"
-              unoptimized
-              priority
-            />
-            <span className="absolute top-0 right-0 size-2.5 rounded-full border-2 border-[#1a120e] bg-[var(--glass-danger)]" />
+            <User className="size-5" strokeWidth={1.75} />
           </Link>
         </div>
       </div>
 
       {!compact ? (
-        <div className="glass-enter mb-5 space-y-1">
-          <p className="text-[15px] font-medium text-white/70">
-            Hi, <span className="text-white">{displayName}</span>{" "}
-            <span aria-hidden>👋</span>
-            {greeting ? (
-              <span className="sr-only"> — {greeting}</span>
-            ) : null}
-          </p>
-          <h1 className="max-w-[16ch] text-[32px] font-bold leading-[1.05] tracking-tight text-white">
-            {headline || (
-              <>
-                Good Food Good{" "}
-                <span className="text-[var(--glass-accent)]">Mood!</span>
-              </>
-            )}
-          </h1>
-        </div>
+        <section className="glass-enter glass-panel-strong relative mb-5 overflow-hidden rounded-[28px] p-5">
+          <div className="pointer-events-none absolute -top-10 -right-8 size-36 rounded-full bg-[var(--glass-accent)]/20 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-12 -left-6 size-28 rounded-full bg-[var(--glass-accent)]/10 blur-2xl" />
+
+          <div className="relative z-10 flex items-center gap-3.5">
+            <div className="relative size-16 shrink-0 overflow-hidden rounded-[20px] border border-white/20 bg-white/10 shadow-lg">
+              <Image
+                src={logoUrl || "/logo-kings-bakamuna.png"}
+                alt={brand}
+                fill
+                className="object-cover"
+                unoptimized
+                priority
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[12px] font-medium tracking-wide text-[var(--glass-accent)] uppercase">
+                {greeting || "Welcome"}
+              </p>
+              <h1 className="truncate text-[24px] font-bold leading-tight text-white">
+                {brand}
+              </h1>
+              {tagline ? (
+                <p className="mt-0.5 truncate text-[13px] text-white/60">
+                  {tagline}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="relative z-10 mt-4 space-y-1">
+            <p className="text-[15px] font-medium text-white/70">
+              Hi, <span className="text-white">{displayName}</span>{" "}
+              <span aria-hidden>👋</span>
+            </p>
+            <p className="max-w-[18ch] text-[28px] font-bold leading-[1.08] tracking-tight text-white">
+              {headline || (
+                <>
+                  Good Food Good{" "}
+                  <span className="text-[var(--glass-accent)]">Mood!</span>
+                </>
+              )}
+            </p>
+          </div>
+        </section>
       ) : null}
 
       <form

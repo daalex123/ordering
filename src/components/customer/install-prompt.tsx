@@ -111,19 +111,21 @@ export function InstallPrompt() {
   if (!visible && !iosHint) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[76px] z-50 flex justify-center px-4">
-      <div className="pointer-events-auto flex w-full max-w-lg items-center gap-3 rounded-2xl bg-[#391713] px-4 py-3 text-white shadow-lg">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[96px] z-50 flex justify-center px-4">
+      <div className="pointer-events-auto flex w-full max-w-lg items-center gap-3 rounded-[20px] border-2 border-[var(--glass-accent)] bg-[#1A0E08] px-4 py-3 text-white shadow-[0_12px_40px_rgba(0,0,0,0.55)] ring-1 ring-white/10">
         <Image
           src="/logo-kings-bakamuna.png"
           alt=""
           width={40}
           height={40}
-          className="size-10 shrink-0 rounded-xl object-cover"
+          className="size-10 shrink-0 rounded-[12px] border border-white/25 object-cover"
           unoptimized
         />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold">Install Kings Bakamuna</p>
-          <p className="text-[11px] leading-snug text-white/75">
+          <p className="text-[14px] font-semibold text-white">
+            Install Kings Bakamuna
+          </p>
+          <p className="text-[11px] leading-snug text-white/70">
             {iosHint
               ? "Tap Share, then Add to Home Screen"
               : deferred
@@ -135,7 +137,7 @@ export function InstallPrompt() {
           <button
             type="button"
             onClick={() => void install()}
-            className="shrink-0 rounded-full bg-[#F5CB58] px-3 py-1.5 text-xs font-bold text-[#391713]"
+            className="glass-cta shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-bold"
           >
             Install
           </button>
@@ -144,7 +146,7 @@ export function InstallPrompt() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss"
-          className="shrink-0 text-lg leading-none text-white/60"
+          className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-[16px] leading-none text-white transition hover:bg-white/25"
         >
           ×
         </button>

@@ -5,6 +5,9 @@ colors:
   glass-bg: "#1A120E"
   glass-bg-deep: "#0E0A08"
   glass-bg-mid: "#2A1A12"
+  glass-bg-prompt: "#2A1608"
+  glass-bg-prompt-mid: "#1A0E08"
+  glass-bg-prompt-deep: "#120A06"
   glass-bg-low: "#120C09"
   glass-bg-lowest: "#0A0705"
   glass-surface: "rgba(255, 255, 255, 0.10)"
@@ -58,6 +61,12 @@ typography:
     fontWeight: 700
     lineHeight: 1.05
     letterSpacing: "-0.02em"
+  hero-line:
+    fontFamily: "League Spartan, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "28px"
+    fontWeight: 700
+    lineHeight: 1.08
+    letterSpacing: "-0.02em"
   product-title:
     fontFamily: "League Spartan, ui-sans-serif, system-ui, sans-serif"
     fontSize: "24px"
@@ -93,6 +102,12 @@ typography:
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.4
+    letterSpacing: "normal"
+  body-md:
+    fontFamily: "League Spartan, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "16px"
+    fontWeight: 600
+    lineHeight: 1.3
     letterSpacing: "normal"
   label:
     fontFamily: "League Spartan, ui-sans-serif, system-ui, sans-serif"
@@ -135,6 +150,7 @@ rounded:
   md: "20px"
   lg: "28px"
   xl: "32px"
+  tile: "16px"
   admin: "14px"
   pill: "9999px"
 spacing:

@@ -19,6 +19,9 @@ import { Label } from "@/components/ui/label";
 import { CustomerPageHeader } from "@/components/customer/customer-page-header";
 import { cn } from "@/lib/utils";
 
+const glassField =
+  "rounded-[20px] border border-white/15 bg-white/8 text-white placeholder:text-white/35";
+
 export default function ProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -93,9 +96,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <p className="py-16 text-center text-sm text-muted-foreground">
-        Loading...
-      </p>
+      <p className="py-16 text-center text-[14px] text-white/50">Loading...</p>
     );
   }
 
@@ -108,22 +109,23 @@ export default function ProfilePage() {
       .join("") || email.slice(0, 1).toUpperCase();
 
   return (
-    <div>
-      <CustomerPageHeader title="Profile" />
-      <div className="-mt-4 space-y-5 rounded-t-[30px] bg-primary px-5 pt-6 pb-10 text-white">
+    <div className="px-5 pb-6">
+      <CustomerPageHeader title="Profile" className="px-0" />
+
+      <div className="glass-panel-strong space-y-5 rounded-[28px] px-4 pt-5 pb-6">
         <div className="flex items-center gap-4">
-          <div className="flex size-16 items-center justify-center rounded-full bg-white text-xl font-bold text-primary">
+          <div className="flex size-16 items-center justify-center rounded-full bg-[var(--glass-accent)] text-[20px] font-bold text-white">
             {initials || "?"}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-xl font-bold">
+            <p className="truncate text-[20px] font-bold text-white">
               {fullName || "Your profile"}
             </p>
-            <p className="truncate text-sm text-[var(--yum-cream)]">{email}</p>
+            <p className="truncate text-[13px] text-white/55">{email}</p>
           </div>
         </div>
 
-        <div className="h-px bg-white/30" />
+        <div className="h-px bg-white/15" />
 
         <nav className="space-y-0">
           <MenuLink href="/orders" icon={ClipboardList} label="My Orders" />
@@ -147,55 +149,63 @@ export default function ProfilePage() {
         {editing ? (
           <form
             onSubmit={save}
-            className="space-y-3 rounded-[24px] bg-white p-4 text-[var(--yum-ink)]"
+            className="glass-panel space-y-3 rounded-[20px] p-4"
           >
-            <p className="font-bold">Edit profile</p>
+            <p className="text-[15px] font-bold text-white">Edit profile</p>
             <div className="space-y-2">
-              <Label>Email</Label>
-              <Input value={email} disabled className="rounded-2xl bg-[var(--yum-sheet)]" />
+              <Label className="text-[13px] text-white/70">Email</Label>
+              <Input
+                value={email}
+                disabled
+                className={cn(glassField, "opacity-60")}
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full name</Label>
+              <Label htmlFor="fullName" className="text-[13px] text-white/70">
+                Full name
+              </Label>
               <Input
                 id="fullName"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+                className={glassField}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone" className="text-[13px] text-white/70">
+                Phone
+              </Label>
               <Input
                 id="phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+                className={glassField}
               />
             </div>
             <div className="space-y-2">
-              <Label>Default address</Label>
+              <Label className="text-[13px] text-white/70">Default address</Label>
               <Input
                 placeholder="Street address"
                 value={line1}
                 onChange={(e) => setLine1(e.target.value)}
-                className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+                className={glassField}
               />
               <Input
                 placeholder="Apt / landmark"
                 value={line2}
                 onChange={(e) => setLine2(e.target.value)}
-                className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+                className={glassField}
               />
               <Input
                 placeholder="City"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="rounded-2xl border-0 bg-[var(--yum-cream)]"
+                className={glassField}
               />
             </div>
             <button
               type="submit"
-              className="w-full rounded-full bg-primary py-3 font-semibold text-white"
+              className="glass-cta w-full rounded-[20px] py-3 text-[15px] font-semibold"
             >
               Save profile
             </button>
@@ -218,12 +228,12 @@ function MenuLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 border-b border-white/25 py-3.5"
+      className="flex items-center gap-3 border-b border-white/15 py-3.5"
     >
-      <span className="flex size-10 items-center justify-center rounded-full bg-white">
-        <Icon className="size-5 text-primary" />
+      <span className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white">
+        <Icon className="size-5" />
       </span>
-      <span className="font-medium text-[var(--yum-cream)]">{label}</span>
+      <span className="text-[15px] font-medium text-white/85">{label}</span>
     </Link>
   );
 }
@@ -245,13 +255,13 @@ function MenuButton({
       onClick={onClick}
       className={cn(
         "flex w-full items-center gap-3 py-3.5 text-left",
-        !last && "border-b border-white/25",
+        !last && "border-b border-white/15",
       )}
     >
-      <span className="flex size-10 items-center justify-center rounded-full bg-white">
-        <Icon className="size-5 text-primary" />
+      <span className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white">
+        <Icon className="size-5" />
       </span>
-      <span className="font-medium text-[var(--yum-cream)]">{label}</span>
+      <span className="text-[15px] font-medium text-white/85">{label}</span>
     </button>
   );
 }

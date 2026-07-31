@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 
 export function CancelOrderButton({ orderId }: { orderId: string }) {
   const router = useRouter();
@@ -24,8 +23,12 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
   }
 
   return (
-    <Button variant="outline" className="w-full" onClick={cancel}>
+    <button
+      type="button"
+      className="glass-panel w-full rounded-[20px] py-3 text-[15px] font-semibold text-white"
+      onClick={cancel}
+    >
       Cancel order
-    </Button>
+    </button>
   );
 }

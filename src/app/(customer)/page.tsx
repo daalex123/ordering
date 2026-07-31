@@ -1,15 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Beef,
-  Coffee,
-  Drumstick,
-  IceCream,
-  Pizza,
-  Salad,
-  UtensilsCrossed,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ProductCard } from "@/components/customer/product-card";
 import { HomeHeader } from "@/components/customer/home-header";
@@ -22,25 +12,29 @@ import { formatMoney } from "@/types/database";
 import { getBranding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
-const CATEGORY_ICONS: LucideIcon[] = [
-  UtensilsCrossed,
-  Pizza,
-  Drumstick,
-  Beef,
-  Salad,
-  IceCream,
-  Coffee,
-];
+const CATEGORY_ICONS = [
+  "/yumquick/cat-snacks.svg",
+  "/yumquick/cat-meal.svg",
+  "/yumquick/cat-vegan.svg",
+  "/yumquick/cat-dessert.svg",
+  "/yumquick/cat-drinks.svg",
+] as const;
 
-function iconForCategory(name: string, index: number): LucideIcon {
+/** Match Figma Bot-menu icons by category name (not list index). */
+function iconForCategory(name: string, index: number): string {
   const n = name.toLowerCase();
-  if (/pizza/.test(n)) return Pizza;
-  if (/burger|beef|meat/.test(n)) return Beef;
-  if (/chicken|wing|drum/.test(n)) return Drumstick;
-  if (/vegan|veggie|vegetarian|salad|plant/.test(n)) return Salad;
-  if (/dessert|sweet|cake|bakery|pastry|ice/.test(n)) return IceCream;
-  if (/drink|beverage|juice|coffee|tea|cocktail/.test(n)) return Coffee;
-  if (/snack|fries|side|starter/.test(n)) return UtensilsCrossed;
+  if (/snack|starter|appetizer|side|fries/.test(n))
+    return "/yumquick/cat-snacks.svg";
+  if (/meal|main|entree|entrée|food|pizza|burger|beef|meat|chicken|wing|drum/.test(
+    n,
+  ))
+    return "/yumquick/cat-meal.svg";
+  if (/vegan|veggie|vegetarian|salad|plant/.test(n))
+    return "/yumquick/cat-vegan.svg";
+  if (/dessert|sweet|cake|bakery|pastry|ice/.test(n))
+    return "/yumquick/cat-dessert.svg";
+  if (/drink|beverage|juice|coffee|tea|cocktail/.test(n))
+    return "/yumquick/cat-drinks.svg";
   return CATEGORY_ICONS[index % CATEGORY_ICONS.length];
 }
 
@@ -130,7 +124,7 @@ export default async function MenuPage({
     id: cat.id,
     label: cat.name,
     href: `/?category=${cat.id}`,
-    Icon: iconForCategory(cat.name, i),
+    icon: iconForCategory(cat.name, i),
   }));
 
   const browseChips = [
@@ -138,7 +132,7 @@ export default async function MenuPage({
       id: null as string | null,
       label: "All",
       href: fullMenuHref,
-      Icon: UtensilsCrossed,
+      icon: "/yumquick/cat-snacks.svg",
     },
     ...homeChips.map((c) => ({ ...c, id: c.id as string | null })),
   ];
@@ -169,6 +163,7 @@ export default async function MenuPage({
       <HomeHeader
         greeting={greetingForHour(hour)}
         firstName={firstName}
+        tagline={restaurant?.eta_text || branding.tagline}
         initialQuery={params.q ?? ""}
         logoUrl={branding.logo_url}
         restaurantName={branding.name}
@@ -183,24 +178,29 @@ export default async function MenuPage({
         ) : null}
 
         <div className="glass-enter glass-enter-delay-1 -mx-1 flex gap-3 overflow-x-auto px-1 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {homeChips.map((chip) => {
-            const Icon = chip.Icon;
-            return (
-              <Link
-                key={chip.id}
-                href={chip.href}
-                scroll={false}
-                className="flex w-[68px] shrink-0 flex-col items-center gap-2 no-underline"
-              >
-                <span className="glass-panel grid size-[58px] place-items-center rounded-[20px] border text-white/80 transition hover:border-[var(--glass-accent)]/50 hover:text-white">
-                  <Icon className="size-6" strokeWidth={1.75} />
-                </span>
-                <span className="w-full truncate text-center text-[12px] capitalize text-white/75">
-                  {chip.label}
-                </span>
-              </Link>
-            );
-          })}
+          {homeChips.map((chip) => (
+            <Link
+              key={chip.id}
+              href={chip.href}
+              scroll={false}
+              className="flex w-[68px] shrink-0 flex-col items-center gap-2 no-underline"
+            >
+              <span className="glass-panel grid size-[58px] place-items-center rounded-[20px] border transition hover:border-[var(--glass-accent)]/50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={chip.icon}
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="size-8 object-contain"
+                  draggable={false}
+                />
+              </span>
+              <span className="w-full truncate text-center text-[12px] capitalize text-white/75">
+                {chip.label}
+              </span>
+            </Link>
+          ))}
         </div>
 
         {promo ? <PromoBanner product={promo} /> : null}
@@ -313,7 +313,7 @@ function CategoryBrowsePage({
     id: string | null;
     label: string;
     href: string;
-    Icon: LucideIcon;
+    icon: string;
   }[];
   activeId: string | null;
   restaurant: RestaurantSettings | null;
@@ -334,7 +334,6 @@ function CategoryBrowsePage({
         <nav className="-mx-1 mb-4 flex gap-3 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {chips.map((chip) => {
             const active = chip.id === activeId;
-            const Icon = chip.Icon;
             return (
               <Link
                 key={chip.label + (chip.id ?? "all")}
@@ -346,11 +345,22 @@ function CategoryBrowsePage({
                   className={cn(
                     "grid size-[58px] place-items-center rounded-[20px] border transition",
                     active
-                      ? "border-transparent bg-[var(--glass-accent)] text-white shadow-[0_8px_20px_rgba(255,138,0,0.35)]"
-                      : "glass-panel text-white/80",
+                      ? "border-transparent bg-[var(--glass-accent)] shadow-[0_8px_20px_rgba(255,138,0,0.35)]"
+                      : "glass-panel",
                   )}
                 >
-                  <Icon className="size-6" strokeWidth={1.75} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={chip.icon}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className={cn(
+                      "size-8 object-contain",
+                      active && "brightness-0 invert",
+                    )}
+                    draggable={false}
+                  />
                 </span>
                 <span
                   className={cn(
