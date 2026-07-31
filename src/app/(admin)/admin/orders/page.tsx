@@ -314,21 +314,21 @@ export default function AdminOrdersPage() {
           <>
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium",
+                "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium",
                 live
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  ? "border-teal-200 bg-teal-50 text-teal-800"
                   : "border-border bg-muted text-muted-foreground",
               )}
             >
               <span
                 className={cn(
                   "size-2 rounded-full",
-                  live ? "animate-pulse bg-emerald-500" : "bg-zinc-400",
+                  live ? "animate-pulse bg-teal-500" : "bg-zinc-400",
                 )}
               />
               {live ? "Live" : "Polling"}
             </span>
-            <div className="inline-flex rounded-xl border bg-white/80 p-0.5 shadow-sm">
+            <div className="inline-flex rounded-lg border border-[var(--admin-line)] bg-white p-0.5">
               {(
                 [
                   ["board", Columns3, "Board"],
@@ -340,13 +340,13 @@ export default function AdminOrdersPage() {
                   type="button"
                   onClick={() => changeView(mode)}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition",
+                    "inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition",
                     view === mode
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                      ? "bg-teal-600 text-white"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <Icon className="size-4" />
+                  <Icon className="size-4" strokeWidth={1.75} />
                   {label}
                 </button>
               ))}
@@ -393,15 +393,15 @@ export default function AdminOrdersPage() {
         />
       </div>
 
-      <div className="admin-panel sticky top-[4.25rem] z-10 space-y-3 rounded-2xl p-3 md:top-4">
+      <div className="admin-panel sticky top-[4.25rem] z-10 space-y-3 rounded-xl p-3 md:top-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.75} />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search name, phone, item, #id…"
-              className="h-11 rounded-xl border-white/70 bg-white pl-10 text-base"
+              className="h-11 rounded-lg border-[var(--admin-line)] bg-white pl-10 text-base"
             />
             {query ? (
               <button
@@ -427,9 +427,9 @@ export default function AdminOrdersPage() {
                 type="button"
                 onClick={() => setFulfillment(value)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition",
+                  "inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition",
                   fulfillment === value
-                    ? "border-primary bg-primary text-primary-foreground"
+                    ? "border-teal-600 bg-teal-600 text-white"
                     : "border-border bg-white text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -465,9 +465,9 @@ export default function AdminOrdersPage() {
               type="button"
               onClick={() => setBoardTab("all")}
               className={cn(
-                "shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium",
+                "shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium",
                 boardTab === "all"
-                  ? "border-primary bg-primary text-primary-foreground"
+                  ? "border-teal-600 bg-teal-600 text-white"
                   : "border-border bg-white text-muted-foreground",
               )}
             >
@@ -479,14 +479,14 @@ export default function AdminOrdersPage() {
                 type="button"
                 onClick={() => setBoardTab(col.status)}
                 className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium",
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium",
                   boardTab === col.status
-                    ? "border-primary bg-primary text-primary-foreground"
+                    ? "border-teal-600 bg-teal-600 text-white"
                     : "border-border bg-white text-muted-foreground",
                 )}
               >
                 {ORDER_STATUS_LABELS[col.status]}
-                <span className="rounded-full bg-black/10 px-1.5 py-0.5 text-[10px] tabular-nums">
+                <span className="rounded-md bg-black/10 px-1.5 py-0.5 text-[10px] tabular-nums">
                   {col.orders.length}
                 </span>
               </button>
@@ -500,7 +500,7 @@ export default function AdminOrdersPage() {
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="h-72 animate-pulse rounded-2xl bg-muted/50"
+              className="h-72 animate-pulse rounded-xl bg-muted/50"
             />
           ))}
         </div>
@@ -516,11 +516,11 @@ export default function AdminOrdersPage() {
           {visibleBoardColumns.map((col) => (
             <section
               key={col.status}
-              className="flex min-w-0 flex-col rounded-2xl border border-white/80 bg-white/55 p-2 shadow-sm backdrop-blur-sm"
+              className="flex min-w-0 flex-col rounded-xl border border-[var(--admin-line)] bg-[var(--admin-canvas)]/70 p-2"
             >
-              <header className="mb-2 flex items-center justify-between gap-2 rounded-xl bg-white/80 px-2.5 py-2">
+              <header className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-2">
                 <OrderStatusBadge status={col.status} />
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
+                <span className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
                   {col.orders.length}
                 </span>
               </header>
@@ -625,7 +625,7 @@ function StatChip({
   value,
   tone,
 }: {
-  icon: ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string; strokeWidth?: number }>;
   label: string;
   value: number;
   tone: "default" | "danger" | "warn" | "ok";
@@ -633,26 +633,26 @@ function StatChip({
   return (
     <div
       className={cn(
-        "admin-panel flex items-center gap-3 rounded-2xl px-3.5 py-3",
-        tone === "danger" && "border-red-200 bg-red-50/90",
-        tone === "warn" && "border-amber-200 bg-amber-50/90",
-        tone === "ok" && "border-emerald-200 bg-emerald-50/90",
+        "admin-panel flex items-center gap-3 rounded-xl px-3.5 py-3",
+        tone === "danger" && "border-red-200 bg-red-50",
+        tone === "warn" && "border-amber-200 bg-amber-50",
+        tone === "ok" && "border-emerald-200 bg-emerald-50",
       )}
     >
       <div
         className={cn(
-          "flex size-10 items-center justify-center rounded-xl bg-white/80 ring-1 ring-black/5",
-          tone === "danger" && "text-red-700",
-          tone === "warn" && "text-amber-700",
-          tone === "ok" && "text-emerald-700",
-          tone === "default" && "text-primary",
+          "flex size-10 items-center justify-center rounded-lg",
+          tone === "danger" && "bg-red-100 text-red-700",
+          tone === "warn" && "bg-amber-100 text-amber-700",
+          tone === "ok" && "bg-emerald-100 text-emerald-700",
+          tone === "default" && "bg-teal-50 text-teal-700",
         )}
       >
-        <Icon className="size-5" />
+        <Icon className="size-5" strokeWidth={1.75} />
       </div>
       <div>
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-2xl font-bold tabular-nums leading-none">{value}</p>
+        <p className="text-2xl font-semibold tabular-nums leading-none">{value}</p>
       </div>
     </div>
   );
@@ -684,16 +684,16 @@ function FilterPills({
           type="button"
           onClick={() => onChange(f.value)}
             className={cn(
-                "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition",
+                "inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition",
             value === f.value
-              ? "border-primary bg-primary text-primary-foreground"
+              ? "border-teal-600 bg-teal-600 text-white"
               : "border-border bg-white text-muted-foreground hover:text-foreground",
           )}
         >
           {f.label}
           <span
             className={cn(
-              "rounded-full px-1.5 py-0.5 text-xs tabular-nums",
+              "rounded-md px-1.5 py-0.5 text-xs tabular-nums",
               value === f.value ? "bg-white/20" : "bg-muted",
             )}
           >
@@ -707,8 +707,8 @@ function FilterPills({
 
 function EmptyState({ query }: { query: string }) {
   return (
-    <div className="admin-panel rounded-2xl px-6 py-16 text-center">
-      <Package className="mx-auto size-8 text-muted-foreground/40" />
+    <div className="admin-panel rounded-xl px-6 py-16 text-center">
+      <Package className="mx-auto size-8 text-muted-foreground/40" strokeWidth={1.5} />
       <p className="mt-3 text-sm font-medium">
         {query ? "No matching orders" : "No orders in this filter"}
       </p>
@@ -747,7 +747,7 @@ function OrderCard({
   return (
     <article
       className={cn(
-        "group rounded-2xl border bg-white shadow-sm ring-1 transition hover:shadow-md",
+        "group rounded-xl border bg-white shadow-sm ring-1 transition hover:shadow-md",
         AGE_STYLES[level].ring,
         styles.soft,
         busy && "opacity-70",

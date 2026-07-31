@@ -66,37 +66,39 @@ export function AdminTopbar({ restaurantName }: { restaurantName: string }) {
 
   return (
     <>
-      <header className="sticky top-0 z-20 mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/60 bg-white/70 px-3 py-2.5 shadow-[0_8px_30px_rgba(57,23,19,0.04)] backdrop-blur-xl md:px-4">
+      <header className="sticky top-0 z-20 mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--admin-line)] bg-white/90 px-3 py-2.5 shadow-[0_1px_2px_rgba(15,20,25,0.04),0_8px_20px_rgba(15,20,25,0.03)] backdrop-blur-md md:px-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground">
             {restaurantName}
           </p>
-          <p className="truncate text-sm font-semibold tracking-tight">{pageLabel}</p>
+          <p className="truncate text-sm font-semibold tracking-tight text-foreground">
+            {pageLabel}
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="hidden items-center gap-2 rounded-xl border bg-background/80 px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary/30 hover:text-foreground sm:inline-flex"
+            className="hidden items-center gap-2 rounded-lg border border-[var(--admin-line)] bg-[var(--admin-canvas)] px-3 py-1.5 text-xs text-muted-foreground transition hover:border-teal-300/60 hover:text-foreground sm:inline-flex"
           >
-            <Search className="size-3.5" />
+            <Search className="size-3.5" strokeWidth={1.75} />
             Jump to…
-            <kbd className="rounded-md border bg-muted px-1.5 py-0.5 font-mono text-[10px]">
+            <kbd className="rounded-md border border-[var(--admin-line)] bg-white px-1.5 py-0.5 font-mono text-[10px]">
               ⌘K
             </kbd>
           </button>
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="inline-flex size-8 items-center justify-center rounded-xl border bg-background/80 text-muted-foreground sm:hidden"
+            className="inline-flex size-8 items-center justify-center rounded-lg border border-[var(--admin-line)] bg-[var(--admin-canvas)] text-muted-foreground sm:hidden"
             aria-label="Search"
           >
-            <Search className="size-4" />
+            <Search className="size-4" strokeWidth={1.75} />
           </button>
           <NotificationBell scope="admin" variant="admin" />
-          <div className="rounded-xl border bg-background/80 px-3 py-1.5 text-right">
-            <p className="font-mono text-sm font-semibold tabular-nums tracking-tight">
+          <div className="rounded-lg border border-[var(--admin-line)] bg-[var(--admin-canvas)] px-3 py-1.5 text-right">
+            <p className="font-mono text-sm font-semibold tabular-nums tracking-tight text-foreground">
               {format(now, "h:mm:ss a")}
             </p>
             <p className="text-[10px] text-muted-foreground">
@@ -138,8 +140,10 @@ export function AdminTopbar({ restaurantName }: { restaurantName: string }) {
                   <button
                     type="button"
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-                      active ? "bg-primary/10 text-primary" : "hover:bg-muted",
+                      "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+                      active
+                        ? "bg-[var(--admin-teal-soft)] text-[var(--admin-teal-deep)]"
+                        : "hover:bg-muted",
                     )}
                     onClick={() => {
                       setOpen(false);
@@ -147,7 +151,14 @@ export function AdminTopbar({ restaurantName }: { restaurantName: string }) {
                       router.push(cmd.href);
                     }}
                   >
-                    <Icon className="size-4 shrink-0" />
+                    <span
+                      className={cn(
+                        "flex size-8 items-center justify-center rounded-lg",
+                        active ? "bg-white" : "bg-muted",
+                      )}
+                    >
+                      <Icon className="size-4 shrink-0" strokeWidth={1.75} />
+                    </span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-medium">{cmd.label}</span>
                       <span className="block text-xs text-muted-foreground">

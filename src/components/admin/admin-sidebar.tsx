@@ -10,7 +10,7 @@ import {
   LogOut,
   Store,
   ExternalLink,
-  Radio,
+  Activity,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -49,7 +49,7 @@ export function AdminNav({
 
   return (
     <>
-      <aside className="sticky top-0 z-30 hidden h-screen w-[15.5rem] shrink-0 flex-col border-r border-white/10 bg-[#2a120f] text-[#fff4ee] md:flex">
+      <aside className="admin-rail sticky top-0 z-30 hidden h-screen w-[15.5rem] shrink-0 flex-col border-r border-[#2a3340] bg-[#161b22] text-[#e8edf2] md:flex">
         <div className="flex items-center gap-3 px-4 py-5">
           <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/10 ring-1 ring-white/15">
             {logoUrl ? (
@@ -60,22 +60,22 @@ export function AdminNav({
                 className="size-full object-contain p-1"
               />
             ) : (
-              <Store className="size-5 text-[#f5cb58]" />
+              <Store className="size-5 text-[#d4a017]" />
             )}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold tracking-tight">
+            <p className="truncate text-sm font-semibold tracking-tight text-[#e8edf2]">
               {restaurantName}
             </p>
-            <p className="inline-flex items-center gap-1 text-[11px] text-white/55">
-              <Radio className="size-3 text-emerald-400" />
+            <p className="inline-flex items-center gap-1.5 text-[11px] text-[#8b95a5]">
+              <Activity className="size-3 text-teal-400" />
               Ops console
             </p>
           </div>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1 px-2.5 py-2">
-          <p className="mb-1 px-2.5 text-[10px] font-semibold tracking-[0.14em] text-white/40 uppercase">
+        <nav className="flex flex-1 flex-col gap-0.5 px-2.5 py-2">
+          <p className="mb-2 px-2.5 text-[10px] font-semibold tracking-[0.12em] text-[#8b95a5] uppercase">
             Workspace
           </p>
           {links.map(({ href, label, icon: Icon, desc }) => {
@@ -88,20 +88,27 @@ export function AdminNav({
                 key={href}
                 href={href}
                 className={cn(
-                  "group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all",
+                  "group relative flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-colors duration-150",
                   active
-                    ? "bg-[#e95322] text-white shadow-[0_8px_24px_rgba(233,83,34,0.35)]"
-                    : "text-white/70 hover:bg-white/8 hover:text-white",
+                    ? "admin-nav-active bg-teal-600 text-white shadow-[0_6px_18px_rgba(13,148,136,0.28)]"
+                    : "text-[#8b95a5] hover:bg-white/10 hover:text-[#e8edf2]",
                 )}
               >
-                <Icon className="size-4 shrink-0 opacity-90" />
+                <span
+                  className={cn(
+                    "flex size-8 shrink-0 items-center justify-center rounded-lg",
+                    active ? "bg-white/15" : "bg-white/5 group-hover:bg-white/10",
+                  )}
+                >
+                  <Icon className="size-4 opacity-95" strokeWidth={1.75} />
+                </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
                     <span className="block text-sm font-medium leading-none">
                       {label}
                     </span>
                     {href === "/admin/orders" && ordersBadge ? (
-                      <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f5cb58] px-1 text-[9px] font-bold text-[#391713]">
+                      <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-md bg-[#d4a017] px-1 text-[9px] font-bold text-[#1a1408]">
                         {ordersBadge}
                       </span>
                     ) : null}
@@ -109,7 +116,7 @@ export function AdminNav({
                   <span
                     className={cn(
                       "mt-1 block text-[10px] leading-none",
-                      active ? "text-white/80" : "text-white/40",
+                      active ? "text-white/75" : "text-[#8b95a5]/80",
                     )}
                   >
                     {desc}
@@ -123,24 +130,24 @@ export function AdminNav({
         <div className="space-y-1 border-t border-white/10 p-2.5">
           <Button
             variant="ghost"
-            className="w-full justify-start gap-2 text-white/65 hover:bg-white/10 hover:text-white"
+            className="w-full justify-start gap-2 text-[#8b95a5] hover:bg-white/10 hover:text-[#e8edf2]"
             render={<Link href="/" target="_blank" />}
           >
-            <ExternalLink className="size-4" />
+            <ExternalLink className="size-4" strokeWidth={1.75} />
             Storefront
           </Button>
           <Button
             variant="ghost"
-            className="w-full justify-start gap-2 text-white/65 hover:bg-white/10 hover:text-white"
+            className="w-full justify-start gap-2 text-[#8b95a5] hover:bg-white/10 hover:text-[#e8edf2]"
             onClick={signOut}
           >
-            <LogOut className="size-4" />
+            <LogOut className="size-4" strokeWidth={1.75} />
             Sign out
           </Button>
         </div>
       </aside>
 
-      <div className="sticky top-0 z-30 border-b border-[#3a1c17] bg-[#2a120f] text-[#fff4ee] md:hidden">
+      <div className="admin-rail sticky top-0 z-30 border-b border-[#2a3340] bg-[#161b22] text-[#e8edf2] md:hidden">
         <div className="flex items-center justify-between gap-2 px-3 py-2.5">
           <div className="flex min-w-0 items-center gap-2">
             <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
@@ -152,18 +159,20 @@ export function AdminNav({
                   className="size-full object-contain p-0.5"
                 />
               ) : (
-                <Store className="size-4 text-[#f5cb58]" />
+                <Store className="size-4 text-[#d4a017]" />
               )}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">{restaurantName}</p>
-              <p className="text-[11px] text-white/50">Ops console</p>
+              <p className="truncate text-sm font-semibold text-[#e8edf2]">
+                {restaurantName}
+              </p>
+              <p className="text-[11px] text-[#8b95a5]">Ops console</p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="text-white/70 hover:bg-white/10 hover:text-white"
+            className="text-[#8b95a5] hover:bg-white/10 hover:text-[#e8edf2]"
             onClick={signOut}
             aria-label="Sign out"
           >
@@ -181,16 +190,16 @@ export function AdminNav({
                 key={href}
                 href={href}
                 className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
                   active
-                    ? "bg-[#e95322] text-white"
-                    : "bg-white/10 text-white/70",
+                    ? "bg-teal-600 text-white"
+                    : "bg-white/10 text-[#8b95a5]",
                 )}
               >
-                <Icon className="size-3.5" />
+                <Icon className="size-3.5" strokeWidth={1.75} />
                 {label}
                 {href === "/admin/orders" && ordersBadge ? (
-                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f5cb58] px-1 text-[9px] font-bold text-[#391713]">
+                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-md bg-[#d4a017] px-1 text-[9px] font-bold text-[#1a1408]">
                     {ordersBadge}
                   </span>
                 ) : null}

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Eye, EyeOff, Lock, Store } from "lucide-react";
+import { Eye, EyeOff, Lock, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,24 +97,24 @@ export function AdminLoginForm({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(160deg,#2a120f_0%,#4a1f18_42%,#e95322_120%)] p-4">
-      <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/15 bg-white shadow-2xl">
-        <div className="border-b bg-[#2a120f] px-6 py-7 text-[#fff4ee]">
-          <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/15">
-            <Store className="size-6 text-[#f5cb58]" />
+    <div className="admin-theme admin-login-stage">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-white shadow-[0_24px_64px_rgba(15,20,25,0.35)]">
+        <div className="border-b border-white/8 bg-[#161b22] px-6 py-7 text-[#e8edf2]">
+          <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-teal-500/15 ring-1 ring-teal-400/25">
+            <ShieldCheck className="size-6 text-teal-300" strokeWidth={1.75} />
           </div>
-          <p className="text-xs font-semibold tracking-[0.16em] text-white/55 uppercase">
+          <p className="text-xs font-semibold tracking-[0.14em] text-[#8b95a5] uppercase">
             Staff access
           </p>
-          <h1 className="mt-1 font-heading text-2xl font-bold tracking-tight">
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight">
             {restaurantName}
           </h1>
-          <p className="mt-1 text-sm text-white/65">
+          <p className="mt-1 text-sm text-[#8b95a5]">
             Sign in to the admin ops console
           </p>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4 px-6 py-6">
+        <form onSubmit={onSubmit} className="space-y-4 bg-white px-6 py-6">
           <div className="space-y-2">
             <Label htmlFor="admin-email">Work email</Label>
             <Input
@@ -125,7 +125,7 @@ export function AdminLoginForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@restaurant.com"
-              className="h-11"
+              className="h-11 rounded-lg"
             />
           </div>
           <div className="space-y-2">
@@ -139,7 +139,7 @@ export function AdminLoginForm({
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-11 pr-11"
+                className="h-11 rounded-lg pr-11"
               />
               <button
                 type="button"
@@ -156,14 +156,18 @@ export function AdminLoginForm({
             </div>
           </div>
 
-          <Button type="submit" className="h-11 w-full gap-2" disabled={loading}>
-            <Lock className="size-4" />
+          <Button
+            type="submit"
+            className="h-11 w-full gap-2 rounded-lg bg-teal-600 hover:bg-teal-700"
+            disabled={loading}
+          >
+            <Lock className="size-4" strokeWidth={1.75} />
             {loading ? "Signing in…" : "Sign in to admin"}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
             Customer ordering?{" "}
-            <Link href="/auth" className="font-semibold text-primary">
+            <Link href="/auth" className="font-semibold text-teal-700 hover:text-teal-800">
               Use customer login
             </Link>
           </p>

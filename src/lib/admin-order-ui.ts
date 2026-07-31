@@ -5,38 +5,38 @@ export const ORDER_STATUS_STYLES: Record<
   { badge: string; soft: string; dot: string }
 > = {
   pending: {
-    badge: "bg-amber-100 text-amber-900 border-amber-200",
-    soft: "bg-amber-50 border-amber-200/80",
+    badge: "bg-amber-50 text-amber-900 border-amber-200",
+    soft: "bg-amber-50/80 border-amber-200/80",
     dot: "bg-amber-500",
   },
   confirmed: {
-    badge: "bg-sky-100 text-sky-900 border-sky-200",
-    soft: "bg-sky-50 border-sky-200/80",
+    badge: "bg-sky-50 text-sky-900 border-sky-200",
+    soft: "bg-sky-50/80 border-sky-200/80",
     dot: "bg-sky-500",
   },
   preparing: {
-    badge: "bg-orange-100 text-orange-900 border-orange-200",
-    soft: "bg-orange-50 border-orange-200/80",
-    dot: "bg-orange-500",
+    badge: "bg-teal-50 text-teal-900 border-teal-200",
+    soft: "bg-teal-50/80 border-teal-200/80",
+    dot: "bg-teal-600",
   },
   ready: {
-    badge: "bg-emerald-100 text-emerald-900 border-emerald-200",
-    soft: "bg-emerald-50 border-emerald-200/80",
+    badge: "bg-emerald-50 text-emerald-900 border-emerald-200",
+    soft: "bg-emerald-50/80 border-emerald-200/80",
     dot: "bg-emerald-500",
   },
   out_for_delivery: {
-    badge: "bg-violet-100 text-violet-900 border-violet-200",
-    soft: "bg-violet-50 border-violet-200/80",
-    dot: "bg-violet-500",
+    badge: "bg-cyan-50 text-cyan-950 border-cyan-200",
+    soft: "bg-cyan-50/80 border-cyan-200/80",
+    dot: "bg-cyan-600",
   },
   completed: {
-    badge: "bg-zinc-100 text-zinc-700 border-zinc-200",
-    soft: "bg-zinc-50 border-zinc-200/80",
-    dot: "bg-zinc-400",
+    badge: "bg-slate-50 text-slate-700 border-slate-200",
+    soft: "bg-slate-50/80 border-slate-200/80",
+    dot: "bg-slate-400",
   },
   cancelled: {
-    badge: "bg-red-100 text-red-800 border-red-200",
-    soft: "bg-red-50 border-red-200/80",
+    badge: "bg-red-50 text-red-800 border-red-200",
+    soft: "bg-red-50/80 border-red-200/80",
     dot: "bg-red-500",
   },
 };

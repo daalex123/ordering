@@ -145,9 +145,9 @@ export default function AdminDashboardPage() {
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={cn(
-                "inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium",
+                "inline-flex items-center gap-2 rounded-lg border px-2.5 py-1 text-xs font-medium",
                 live
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  ? "border-teal-200 bg-teal-50 text-teal-800"
                   : "border-border bg-muted text-muted-foreground",
               )}
             >
@@ -155,13 +155,13 @@ export default function AdminDashboardPage() {
                 <span
                   className={cn(
                     "absolute inset-0 rounded-full",
-                    live ? "admin-live-dot text-emerald-500" : "",
+                    live ? "admin-live-dot text-teal-500" : "",
                   )}
                 />
                 <span
                   className={cn(
                     "relative size-2 rounded-full",
-                    live ? "bg-emerald-500" : "bg-zinc-400",
+                    live ? "bg-teal-500" : "bg-zinc-400",
                   )}
                 />
               </span>
@@ -169,15 +169,15 @@ export default function AdminDashboardPage() {
             </span>
             <Button render={<Link href="/admin/orders" />}>
               Open board
-              <ArrowRight className="size-4" />
+              <ArrowRight className="size-4" strokeWidth={1.75} />
             </Button>
           </div>
         }
       />
 
       {stats.overdue > 0 ? (
-        <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-900 shadow-sm">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 shadow-sm">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} />
           <div>
             <p className="font-semibold">
               {stats.overdue} order{stats.overdue === 1 ? "" : "s"} past 25 min SLA
@@ -203,9 +203,9 @@ export default function AdminDashboardPage() {
           value={loading ? "—" : String(stats.count)}
           hint={`${stats.completed} done · ${stats.cancelled} cancelled`}
           icon={ShoppingBag}
-          accent="from-orange-500/15 to-transparent text-primary"
+          tone="teal"
         >
-          <Sparkline values={stats.visibleHours} className="mt-3 h-9 w-full text-primary" />
+          <Sparkline values={stats.visibleHours} className="mt-3 h-9 w-full text-teal-600" />
         </MetricCard>
         <MetricCard
           title="Live queue"
@@ -216,17 +216,17 @@ export default function AdminDashboardPage() {
               : "Nothing pending"
           }
           icon={Timer}
-          accent="from-amber-400/20 to-transparent text-amber-700"
+          tone="amber"
         >
           <div className="mt-3 flex gap-1">
             {ORDER_STATUS_FLOW.filter((s) => s !== "completed").map((s) => (
               <div
                 key={s}
-                className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden"
+                className="h-1.5 flex-1 overflow-hidden rounded-md bg-muted"
                 title={`${ORDER_STATUS_LABELS[s]}: ${stats.byStatus[s] ?? 0}`}
               >
                 <div
-                  className="h-full rounded-full bg-amber-500 transition-all"
+                  className="h-full rounded-md bg-amber-500 transition-all"
                   style={{
                     width: `${((stats.byStatus[s] ?? 0) / pipelineMax) * 100}%`,
                   }}
@@ -240,7 +240,7 @@ export default function AdminDashboardPage() {
           value={loading ? "—" : formatMoney(stats.revenue)}
           hint={stats.count ? `AOV ${formatMoney(stats.avg)}` : "No sales yet"}
           icon={Wallet}
-          accent="from-emerald-400/20 to-transparent text-emerald-700"
+          tone="emerald"
         >
           <Sparkline
             values={stats.visibleRevenue}
@@ -263,7 +263,7 @@ export default function AdminDashboardPage() {
               : "Complete an order to measure"
           }
           icon={TrendingUp}
-          accent="from-sky-400/20 to-transparent text-sky-700"
+          tone="slate"
         >
           <p className="mt-3 text-[11px] text-muted-foreground">
             Peak hour{" "}
@@ -276,17 +276,19 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-12">
-        <section className="admin-panel rounded-2xl p-4 lg:col-span-7">
+        <section className="admin-panel rounded-xl p-4 lg:col-span-7">
           <div className="mb-4 flex items-end justify-between gap-2">
             <div>
-              <h2 className="font-heading text-base font-semibold tracking-tight">
+              <h2 className="text-base font-semibold tracking-tight">
                 Pipeline load
               </h2>
               <p className="text-xs text-muted-foreground">
                 Volume by stage — thicker bars need staff focus
               </p>
             </div>
-            <Package className="size-4 text-muted-foreground" />
+            <span className="admin-icon-tile">
+              <Package className="size-4" strokeWidth={1.75} />
+            </span>
           </div>
           <div className="space-y-3">
             {ORDER_STATUS_FLOW.map((status) => {
@@ -294,15 +296,15 @@ export default function AdminDashboardPage() {
               return (
                 <div key={status} className="grid grid-cols-[7.5rem_1fr_2rem] items-center gap-3">
                   <OrderStatusBadge status={status} />
-                  <div className="h-2.5 overflow-hidden rounded-full bg-muted/80">
+                  <div className="h-2.5 overflow-hidden rounded-md bg-muted/80">
                     <div
                       className={cn(
-                        "h-full rounded-full transition-all duration-500",
+                        "h-full rounded-md transition-all duration-500",
                         status === "pending" && "bg-amber-400",
-                        status === "confirmed" && "bg-sky-400",
-                        status === "preparing" && "bg-orange-400",
-                        status === "ready" && "bg-emerald-400",
-                        status === "out_for_delivery" && "bg-violet-400",
+                        status === "confirmed" && "bg-sky-500",
+                        status === "preparing" && "bg-teal-500",
+                        status === "ready" && "bg-emerald-500",
+                        status === "out_for_delivery" && "bg-cyan-600",
                         status === "completed" && "bg-zinc-300",
                       )}
                       style={{ width: `${(count / pipelineMax) * 100}%` }}
@@ -317,17 +319,19 @@ export default function AdminDashboardPage() {
           </div>
         </section>
 
-        <section className="admin-panel rounded-2xl p-4 lg:col-span-5">
+        <section className="admin-panel rounded-xl p-4 lg:col-span-5">
           <div className="mb-4 flex items-end justify-between gap-2">
             <div>
-              <h2 className="font-heading text-base font-semibold tracking-tight">
+              <h2 className="text-base font-semibold tracking-tight">
                 Needs attention
               </h2>
               <p className="text-xs text-muted-foreground">
                 Oldest live tickets first
               </p>
             </div>
-            <Clock3 className="size-4 text-muted-foreground" />
+            <span className="admin-icon-tile">
+              <Clock3 className="size-4" strokeWidth={1.75} />
+            </span>
           </div>
           {loading ? (
             <div className="space-y-2">
@@ -336,7 +340,7 @@ export default function AdminDashboardPage() {
               ))}
             </div>
           ) : stats.attention.length === 0 ? (
-            <div className="rounded-xl border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
+            <div className="rounded-lg border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
               Queue clear — nice work
             </div>
           ) : (
@@ -345,7 +349,7 @@ export default function AdminDashboardPage() {
                 <li
                   key={order.id}
                   className={cn(
-                    "flex items-center justify-between gap-2 rounded-xl border bg-white/80 px-3 py-2.5 ring-1",
+                    "flex items-center justify-between gap-2 rounded-lg border bg-white px-3 py-2.5 ring-1",
                     AGE_STYLES[level].ring,
                   )}
                 >
@@ -383,11 +387,11 @@ export default function AdminDashboardPage() {
         </section>
       </div>
 
-      <section className="admin-panel overflow-hidden rounded-2xl">
+      <section className="admin-panel overflow-hidden rounded-xl">
         <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
           <div>
-            <h2 className="font-heading text-base font-semibold tracking-tight">
-              Latest tickets
+            <h2 className="text-base font-semibold tracking-tight">
+              Latest Orders
             </h2>
             <p className="text-xs text-muted-foreground">Streaming from today</p>
           </div>
@@ -415,7 +419,7 @@ export default function AdminDashboardPage() {
               return (
                 <li
                   key={order.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-white/60"
+                  className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-[var(--admin-canvas)]"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -464,34 +468,40 @@ function MetricCard({
   value,
   hint,
   icon: Icon,
-  accent,
+  tone,
   children,
 }: {
   title: string;
   value: string;
   hint: string;
-  icon: ComponentType<{ className?: string }>;
-  accent: string;
+  icon: ComponentType<{ className?: string; strokeWidth?: number }>;
+  tone: "teal" | "amber" | "emerald" | "slate";
   children?: ReactNode;
 }) {
+  const iconClass = {
+    teal: "bg-teal-50 text-teal-700",
+    amber: "bg-amber-50 text-amber-700",
+    emerald: "bg-emerald-50 text-emerald-700",
+    slate: "bg-slate-100 text-slate-600",
+  }[tone];
+
   return (
-    <div
-      className={cn(
-        "admin-panel relative overflow-hidden rounded-2xl p-4",
-        "bg-gradient-to-br",
-        accent,
-      )}
-    >
+    <div className="admin-panel relative overflow-hidden rounded-xl p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-medium text-muted-foreground">{title}</p>
-          <p className="mt-1 text-2xl font-bold tracking-tight tabular-nums text-foreground">
+          <p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums text-foreground">
             {value}
           </p>
           <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>
         </div>
-        <div className="flex size-9 items-center justify-center rounded-xl bg-white/70 text-inherit shadow-sm ring-1 ring-black/5">
-          <Icon className="size-4" />
+        <div
+          className={cn(
+            "flex size-9 items-center justify-center rounded-lg",
+            iconClass,
+          )}
+        >
+          <Icon className="size-4" strokeWidth={1.75} />
         </div>
       </div>
       {children}

@@ -77,7 +77,7 @@ export function NotificationBell({
           "relative inline-flex items-center justify-center transition",
           variant === "customer"
             ? "size-[26px] rounded-[10px] bg-[#F5F5F5]"
-            : "size-8 rounded-xl border bg-background/80 text-muted-foreground hover:border-primary/30 hover:text-foreground",
+            : "size-8 rounded-lg border border-[var(--admin-line)] bg-[var(--admin-canvas)] text-muted-foreground hover:border-teal-300/60 hover:text-foreground",
         )}
       >
         {variant === "customer" ? (
@@ -91,7 +91,7 @@ export function NotificationBell({
             />
           </span>
         ) : (
-          <Bell className="size-4" />
+          <Bell className="size-4" strokeWidth={1.75} />
         )}
         {badge ? (
           <span

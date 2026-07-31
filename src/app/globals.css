@@ -145,21 +145,90 @@
   }
 }
 
-/* Admin ops console surface */
+/* Admin ops console — cool graphite + teal (scoped; storefront keeps yum kit) */
+.admin-shell,
+.admin-theme {
+  --admin-ink: #0f1419;
+  --admin-rail: #161b22;
+  --admin-rail-edge: #2a3340;
+  --admin-rail-text: #e8edf2;
+  --admin-rail-muted: #8b95a5;
+  --admin-teal: #0d9488;
+  --admin-teal-deep: #0f766e;
+  --admin-teal-soft: #ecfdf8;
+  --admin-brass: #d4a017;
+  --admin-canvas: #f0f2f5;
+  --admin-panel: #ffffff;
+  --admin-line: #e2e6eb;
+
+  --primary: var(--admin-teal);
+  --primary-foreground: #ffffff;
+  --ring: var(--admin-teal);
+  --background: var(--admin-canvas);
+  --foreground: #111827;
+  --card: var(--admin-panel);
+  --card-foreground: #111827;
+  --muted: #e8ecf0;
+  --muted-foreground: #5c6570;
+  --accent: var(--admin-teal-soft);
+  --accent-foreground: var(--admin-teal-deep);
+  --secondary: #e8ecf0;
+  --secondary-foreground: #1a222d;
+  --border: var(--admin-line);
+  --input: #e8ecf0;
+  --destructive: #dc2626;
+  --yum-ink: #111827;
+}
+
 .admin-shell {
   overflow-x: hidden;
-  background-color: #f4f1ee;
+  color: var(--foreground);
+  background-color: var(--admin-canvas);
   background-image:
-    radial-gradient(ellipse 80% 50% at 100% -10%, rgba(233, 83, 34, 0.12), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 0% 0%, rgba(245, 203, 88, 0.18), transparent 50%),
-    linear-gradient(180deg, #fff8f3 0%, #f4f1ee 32%, #f0eeeb 100%);
+    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(13, 148, 136, 0.07), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 0% 100%, rgba(15, 20, 25, 0.04), transparent 50%),
+    linear-gradient(180deg, #f5f7fa 0%, var(--admin-canvas) 40%, #eef1f4 100%);
 }
 
 .admin-panel {
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 10px 40px rgba(57, 23, 19, 0.05);
-  backdrop-filter: blur(12px);
+  border: 1px solid var(--admin-line);
+  background: var(--admin-panel);
+  box-shadow: 0 1px 2px rgba(15, 20, 25, 0.04), 0 8px 24px rgba(15, 20, 25, 0.04);
+}
+
+.admin-login-stage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 20%, rgba(13, 148, 136, 0.35), transparent 55%),
+    linear-gradient(165deg, #0f1419 0%, #161b22 48%, #0a5f56 120%);
+}
+
+.admin-rail {
+  background: linear-gradient(180deg, #161b22 0%, #0f1419 100%);
+  color: #e8edf2;
+  border-color: #2a3340;
+}
+
+.admin-nav-active {
+  background: #0d9488;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.28);
+}
+
+.admin-icon-tile {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: var(--admin-teal-soft);
+  color: var(--admin-teal-deep);
+  box-shadow: inset 0 0 0 1px rgba(13, 148, 136, 0.12);
 }
 
 @keyframes admin-pulse-ring {

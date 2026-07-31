@@ -479,7 +479,7 @@ export default function AdminMenuPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3 rounded-2xl border bg-muted/20 p-3">
+                <div className="space-y-3 rounded-xl border bg-muted/20 p-3">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-semibold">Portion sizes</p>
@@ -592,7 +592,7 @@ export default function AdminMenuPage() {
                   )}
                 </div>
 
-                <div className="space-y-2 rounded-2xl border bg-muted/20 p-3">
+                <div className="space-y-2 rounded-xl border bg-muted/20 p-3">
                   <p className="text-sm font-semibold">Home page placement</p>
                   <p className="text-xs text-muted-foreground">
                     Control which products appear in Best Seller and Recommend
@@ -661,7 +661,7 @@ export default function AdminMenuPage() {
         />
       </div>
 
-      <div className="admin-panel rounded-2xl p-4">
+      <div className="admin-panel rounded-xl p-4">
         <h2 className="mb-3 text-sm font-semibold tracking-tight">
           Add category
         </h2>
@@ -688,7 +688,7 @@ export default function AdminMenuPage() {
           return (
             <section key={cat.id} className="space-y-3">
               <div className="flex items-center justify-between gap-2">
-                <h2 className="font-heading text-lg font-semibold tracking-tight">
+                <h2 className="text-lg font-semibold tracking-tight">
                   {cat.name}
                 </h2>
                 <Badge variant="secondary">{list.length} items</Badge>
@@ -700,7 +700,7 @@ export default function AdminMenuPage() {
                     <div
                       key={product.id}
                       className={cn(
-                        "admin-panel flex flex-wrap items-center justify-between gap-3 rounded-2xl p-3",
+                        "admin-panel flex flex-wrap items-center justify-between gap-3 rounded-xl p-3",
                         !product.is_available && "opacity-70",
                       )}
                     >
@@ -799,7 +799,7 @@ export default function AdminMenuPage() {
           );
         })}
         {categories.length === 0 ? (
-          <p className="rounded-2xl border border-dashed px-6 py-12 text-center text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed px-6 py-12 text-center text-sm text-muted-foreground">
             Add a category to start building your menu
           </p>
         ) : null}
@@ -818,7 +818,7 @@ function SummaryTile({
   hint?: string;
 }) {
   return (
-    <div className="admin-panel rounded-2xl p-4">
+    <div className="admin-panel rounded-xl p-4">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-bold tracking-tight tabular-nums">
         {value}

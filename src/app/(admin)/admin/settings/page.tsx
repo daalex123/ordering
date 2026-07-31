@@ -76,7 +76,7 @@ export default function AdminSettingsPage() {
           title="Restaurant settings"
           description="Store details, branding, hours, and delivery"
         />
-        <div className="h-40 animate-pulse rounded-2xl bg-muted/60" />
+        <div className="h-40 animate-pulse rounded-xl bg-muted/60" />
       </div>
     );
   }
@@ -118,7 +118,7 @@ export default function AdminSettingsPage() {
 
       <form
         onSubmit={save}
-        className="admin-panel space-y-5 rounded-2xl p-5"
+        className="admin-panel space-y-5 rounded-xl p-5"
       >
         <div className="flex items-center gap-2 border-b pb-3">
           <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
