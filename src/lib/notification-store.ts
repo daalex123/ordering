@@ -24,7 +24,18 @@ type NotificationState = {
   ) => void;
   markRead: (id: string) => void;
   markAllRead: (scope: NotificationScope) => void;
+  remove: (id: string) => void;
+  /** Drop all notifications tied to an order (e.g. after it is completed). */
+  removeForOrder: (orderId: string) => void;
 };
+
+export function adminOrderNotificationId(orderId: string) {
+  return `admin-order-${orderId}`;
+}
+
+export function customerCompletedNotificationId(orderId: string) {
+  return `customer-completed-${orderId}`;
+}
 
 export const useNotifications = create<NotificationState>()(
   persist(
@@ -54,6 +65,18 @@ export const useNotifications = create<NotificationState>()(
         set((state) => ({
           items: state.items.map((item) =>
             item.scope === scope ? { ...item, read: true } : item,
+          ),
+        })),
+      remove: (id) =>
+        set((state) => ({
+          items: state.items.filter((item) => item.id !== id),
+        })),
+      removeForOrder: (orderId) =>
+        set((state) => ({
+          items: state.items.filter(
+            (item) =>
+              item.id !== adminOrderNotificationId(orderId) &&
+              item.id !== customerCompletedNotificationId(orderId),
           ),
         })),
     }),

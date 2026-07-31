@@ -63,6 +63,7 @@ import {
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { MarkNotificationsRead } from "@/components/mark-notifications-read";
+import { useNotifications, adminOrderNotificationId } from "@/lib/notification-store";
 import { cn } from "@/lib/utils";
 
 const BOARD_COLUMNS: OrderStatus[] = [
@@ -92,6 +93,7 @@ export default function AdminOrdersPage() {
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [cancelId, setCancelId] = useState<string | null>(null);
+  const removeNotification = useNotifications((s) => s.remove);
 
   useEffect(() => {
     try {
@@ -224,6 +226,7 @@ export default function AdminOrdersPage() {
     }
     toast.success(ORDER_STATUS_LABELS[status]);
     if (status === "cancelled" || status === "completed") {
+      removeNotification(adminOrderNotificationId(orderId));
       setSelectedId((id) => (id === orderId ? null : id));
     }
   }

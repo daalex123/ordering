@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { orderTicketLabel } from "@/lib/admin-order-ui";
-import { useNotifications } from "@/lib/notification-store";
+import { useNotifications, customerCompletedNotificationId } from "@/lib/notification-store";
 import type { Order } from "@/types/database";
 
 /**
@@ -57,7 +57,7 @@ export function OrderCompletedAlerts() {
             const body = "Your order is done. Enjoy!";
 
             push({
-              id: `customer-completed-${next.id}`,
+              id: customerCompletedNotificationId(next.id),
               scope: "customer",
               title,
               body,

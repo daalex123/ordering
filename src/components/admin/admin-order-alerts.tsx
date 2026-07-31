@@ -5,15 +5,17 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { orderTicketLabel } from "@/lib/admin-order-ui";
-import { useNotifications } from "@/lib/notification-store";
+import { useNotifications, adminOrderNotificationId } from "@/lib/notification-store";
 import { formatMoney, type Order } from "@/types/database";
 
 /**
  * App-wide admin alert when a new order arrives (any admin page).
+ * Clears that order's notification when it is completed or cancelled.
  */
 export function AdminOrderAlerts() {
   const router = useRouter();
   const push = useNotifications((s) => s.push);
+  const remove = useNotifications((s) => s.remove);
   const seenIds = useRef<Set<string>>(new Set());
   const ready = useRef(false);
 
@@ -33,7 +35,7 @@ export function AdminOrderAlerts() {
       const body = `${order.customer_name || order.customer_phone} · ${formatMoney(Number(order.total))}`;
 
       push({
-        id: `admin-order-${order.id}`,
+        id: adminOrderNotificationId(order.id),
         scope: "admin",
         title,
         body,
@@ -48,6 +50,11 @@ export function AdminOrderAlerts() {
           onClick: () => router.push(href),
         },
       });
+    }
+
+    function clearIfFinished(order: Order) {
+      if (order.status !== "completed" && order.status !== "cancelled") return;
+      remove(adminOrderNotificationId(order.id));
     }
 
     async function connect() {
@@ -85,6 +92,13 @@ export function AdminOrderAlerts() {
             notify(payload.new as Order);
           },
         )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "orders" },
+          (payload) => {
+            clearIfFinished(payload.new as Order);
+          },
+        )
         .subscribe();
     }
 
@@ -103,7 +117,7 @@ export function AdminOrderAlerts() {
       authSub.unsubscribe();
       if (channel) void supabase.removeChannel(channel);
     };
-  }, [push, router]);
+  }, [push, remove, router]);
 
   return null;
 }

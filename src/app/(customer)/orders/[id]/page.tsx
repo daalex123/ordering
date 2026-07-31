@@ -11,6 +11,7 @@ import { CancelOrderButton } from "@/components/customer/cancel-order-button";
 import { ReorderButton } from "@/components/customer/reorder-button";
 import { format } from "date-fns";
 import { CustomerPageHeader } from "@/components/customer/customer-page-header";
+import { ClearOrderNotification } from "@/components/clear-order-notification";
 
 export default async function OrderDetailPage({
   params,
@@ -46,6 +47,7 @@ export default async function OrderDetailPage({
 
   return (
     <div>
+      <ClearOrderNotification orderId={order.id} status={order.status} />
       <CustomerPageHeader title="Order Details" backHref="/orders" />
       <div className="-mt-4 space-y-4 rounded-t-[30px] bg-white px-5 pt-6 pb-8">
         <p className="text-sm text-muted-foreground">
