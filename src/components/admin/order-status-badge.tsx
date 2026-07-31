@@ -15,12 +15,11 @@ export function OrderStatusBadge({
     <Badge
       variant="outline"
       className={cn(
-        "h-auto gap-1.5 border px-2.5 py-1 text-sm font-medium",
+        "h-auto gap-1.5 border px-3 py-1 text-sm font-bold rounded-[13.5px]",
         styles.badge,
         className,
       )}
     >
-      <span className={cn("size-2 rounded-full", styles.dot)} aria-hidden />
       {ORDER_STATUS_LABELS[status]}
     </Badge>
   );

@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { format } from "date-fns";
 import {
   ClipboardList,
   LayoutDashboard,
   Search,
   Settings,
+  Store,
   UtensilsCrossed,
 } from "lucide-react";
 import {
@@ -21,22 +21,16 @@ import { cn } from "@/lib/utils";
 
 const COMMANDS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, hint: "Overview & KPIs" },
-  { href: "/admin/orders", label: "Order board", icon: ClipboardList, hint: "Kitchen queue" },
-  { href: "/admin/menu", label: "Menu", icon: UtensilsCrossed, hint: "Products & categories" },
+  { href: "/admin/orders", label: "Order Lists", icon: ClipboardList, hint: "Kitchen queue" },
+  { href: "/admin/menu", label: "Products", icon: UtensilsCrossed, hint: "Products & categories" },
   { href: "/admin/settings", label: "Settings", icon: Settings, hint: "Store & branding" },
 ];
 
 export function AdminTopbar({ restaurantName }: { restaurantName: string }) {
-  const [now, setNow] = useState(() => new Date());
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const pathname = usePathname();
   const router = useRouter();
-
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(id);
-  }, []);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -59,51 +53,33 @@ export function AdminTopbar({ restaurantName }: { restaurantName: string }) {
     );
   }, [query]);
 
-  const pageLabel =
-    COMMANDS.find((c) =>
-      c.href === "/admin" ? pathname === "/admin" : pathname.startsWith(c.href),
-    )?.label ?? "Admin";
-
   return (
     <>
-      <header className="sticky top-0 z-20 mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--admin-line)] bg-white/90 px-3 py-2.5 shadow-[0_1px_2px_rgba(15,20,25,0.04),0_8px_20px_rgba(15,20,25,0.03)] backdrop-blur-md md:px-4">
-        <div className="min-w-0">
-          <p className="text-[11px] font-medium tracking-wide text-muted-foreground">
-            {restaurantName}
-          </p>
-          <p className="truncate text-sm font-semibold tracking-tight text-foreground">
-            {pageLabel}
-          </p>
-        </div>
+      <header className="sticky top-0 z-20 mb-6 flex h-[70px] items-center justify-between gap-3 border-b border-[#e6e8ef] bg-white px-4 md:px-6">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex h-10 w-full max-w-[388px] items-center gap-3 rounded-full bg-[#f5f6fa] px-4 text-sm text-[#202224]/50 transition hover:bg-[#eef0f5]"
+        >
+          <Search className="size-4 shrink-0" strokeWidth={1.75} />
+          <span className="truncate">Search</span>
+          <kbd className="ml-auto hidden rounded-md bg-white px-1.5 py-0.5 font-mono text-[10px] text-[#606060] sm:inline">
+            ⌘K
+          </kbd>
+        </button>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="hidden items-center gap-2 rounded-lg border border-[var(--admin-line)] bg-[var(--admin-canvas)] px-3 py-1.5 text-xs text-muted-foreground transition hover:border-teal-300/60 hover:text-foreground sm:inline-flex"
-          >
-            <Search className="size-3.5" strokeWidth={1.75} />
-            Jump to…
-            <kbd className="rounded-md border border-[var(--admin-line)] bg-white px-1.5 py-0.5 font-mono text-[10px]">
-              ⌘K
-            </kbd>
-          </button>
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="inline-flex size-8 items-center justify-center rounded-lg border border-[var(--admin-line)] bg-[var(--admin-canvas)] text-muted-foreground sm:hidden"
-            aria-label="Search"
-          >
-            <Search className="size-4" strokeWidth={1.75} />
-          </button>
+        <div className="flex shrink-0 items-center gap-3 sm:gap-4">
           <NotificationBell scope="admin" variant="admin" />
-          <div className="rounded-lg border border-[var(--admin-line)] bg-[var(--admin-canvas)] px-3 py-1.5 text-right">
-            <p className="font-mono text-sm font-semibold tabular-nums tracking-tight text-foreground">
-              {format(now, "h:mm:ss a")}
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              {format(now, "EEE · MMM d")}
-            </p>
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-10 items-center justify-center overflow-hidden rounded-full bg-[#eef3ff] text-[#4880ff]">
+              <Store className="size-4" strokeWidth={1.75} />
+            </div>
+            <div className="hidden min-w-0 sm:block">
+              <p className="truncate text-sm font-bold text-[#404040]">
+                {restaurantName}
+              </p>
+              <p className="text-xs font-semibold text-[#565656]">Admin</p>
+            </div>
           </div>
         </div>
       </header>
@@ -140,10 +116,10 @@ export function AdminTopbar({ restaurantName }: { restaurantName: string }) {
                   <button
                     type="button"
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+                      "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors",
                       active
-                        ? "bg-[var(--admin-teal-soft)] text-[var(--admin-teal-deep)]"
-                        : "hover:bg-muted",
+                        ? "bg-[#eef3ff] text-[#4880ff]"
+                        : "hover:bg-[#f5f6fa]",
                     )}
                     onClick={() => {
                       setOpen(false);
@@ -151,16 +127,9 @@ export function AdminTopbar({ restaurantName }: { restaurantName: string }) {
                       router.push(cmd.href);
                     }}
                   >
-                    <span
-                      className={cn(
-                        "flex size-8 items-center justify-center rounded-lg",
-                        active ? "bg-white" : "bg-muted",
-                      )}
-                    >
-                      <Icon className="size-4 shrink-0" strokeWidth={1.75} />
-                    </span>
+                    <Icon className="size-4 shrink-0" strokeWidth={1.75} />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-medium">{cmd.label}</span>
+                      <span className="block text-sm font-semibold">{cmd.label}</span>
                       <span className="block text-xs text-muted-foreground">
                         {cmd.hint}
                       </span>

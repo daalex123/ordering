@@ -316,14 +316,14 @@ export default function AdminOrdersPage() {
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium",
                 live
-                  ? "border-teal-200 bg-teal-50 text-teal-800"
+                  ? "border-[#4880ff]/30 bg-[#4880ff]/10 text-[#4880ff]"
                   : "border-border bg-muted text-muted-foreground",
               )}
             >
               <span
                 className={cn(
                   "size-2 rounded-full",
-                  live ? "animate-pulse bg-teal-500" : "bg-zinc-400",
+                  live ? "animate-pulse bg-[#4880ff]" : "bg-zinc-400",
                 )}
               />
               {live ? "Live" : "Polling"}
@@ -342,7 +342,7 @@ export default function AdminOrdersPage() {
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition",
                     view === mode
-                      ? "bg-teal-600 text-white"
+                      ? "bg-[#4880ff] text-white"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -429,7 +429,7 @@ export default function AdminOrdersPage() {
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition",
                   fulfillment === value
-                    ? "border-teal-600 bg-teal-600 text-white"
+                    ? "border-[#4880ff] bg-[#4880ff] text-white"
                     : "border-border bg-white text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -467,7 +467,7 @@ export default function AdminOrdersPage() {
               className={cn(
                 "shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium",
                 boardTab === "all"
-                  ? "border-teal-600 bg-teal-600 text-white"
+                  ? "border-[#4880ff] bg-[#4880ff] text-white"
                   : "border-border bg-white text-muted-foreground",
               )}
             >
@@ -481,7 +481,7 @@ export default function AdminOrdersPage() {
                 className={cn(
                   "inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium",
                   boardTab === col.status
-                    ? "border-teal-600 bg-teal-600 text-white"
+                    ? "border-[#4880ff] bg-[#4880ff] text-white"
                     : "border-border bg-white text-muted-foreground",
                 )}
               >
@@ -645,7 +645,7 @@ function StatChip({
           tone === "danger" && "bg-red-100 text-red-700",
           tone === "warn" && "bg-amber-100 text-amber-700",
           tone === "ok" && "bg-emerald-100 text-emerald-700",
-          tone === "default" && "bg-teal-50 text-teal-700",
+          tone === "default" && "bg-[#eef3ff] text-[#4880ff]",
         )}
       >
         <Icon className="size-5" strokeWidth={1.75} />
@@ -686,7 +686,7 @@ function FilterPills({
             className={cn(
                 "inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition",
             value === f.value
-              ? "border-teal-600 bg-teal-600 text-white"
+              ? "border-[#4880ff] bg-[#4880ff] text-white"
               : "border-border bg-white text-muted-foreground hover:text-foreground",
           )}
         >

@@ -43,7 +43,7 @@ export default async function AdminLoginPage({
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#0f1419] text-[#e8edf2]">
+        <div className="flex min-h-screen items-center justify-center bg-[#f5f6fa] text-[#202224]">
           Loading…
         </div>
       }

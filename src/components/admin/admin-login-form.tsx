@@ -38,7 +38,6 @@ export function AdminLoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Clear a customer session so staff can sign in with work credentials
   useEffect(() => {
     const supabase = createClient();
     void (async () => {
@@ -98,19 +97,19 @@ export function AdminLoginForm({
 
   return (
     <div className="admin-theme admin-login-stage">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-white shadow-[0_24px_64px_rgba(15,20,25,0.35)]">
-        <div className="border-b border-white/8 bg-[#161b22] px-6 py-7 text-[#e8edf2]">
-          <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-teal-500/15 ring-1 ring-teal-400/25">
-            <ShieldCheck className="size-6 text-teal-300" strokeWidth={1.75} />
+      <div className="w-full max-w-md overflow-hidden rounded-[14px] bg-white shadow-[0_8px_32px_rgba(32,34,36,0.08)]">
+        <div className="border-b border-[#e6e8ef] px-6 py-7">
+          <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-[#eef3ff]">
+            <ShieldCheck className="size-6 text-[#4880ff]" strokeWidth={1.75} />
           </div>
-          <p className="text-xs font-semibold tracking-[0.14em] text-[#8b95a5] uppercase">
+          <p className="text-xs font-bold tracking-[0.16em] text-[#606060] uppercase">
             Staff access
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+          <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[#4880ff]">
             {restaurantName}
           </h1>
-          <p className="mt-1 text-sm text-[#8b95a5]">
-            Sign in to the admin ops console
+          <p className="mt-1 text-sm text-[#606060]">
+            Sign in to the admin dashboard
           </p>
         </div>
 
@@ -125,7 +124,7 @@ export function AdminLoginForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@restaurant.com"
-              className="h-11 rounded-lg"
+              className="h-11 rounded-md bg-[#f5f6fa]"
             />
           </div>
           <div className="space-y-2">
@@ -139,11 +138,11 @@ export function AdminLoginForm({
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-11 rounded-lg pr-11"
+                className="h-11 rounded-md bg-[#f5f6fa] pr-11"
               />
               <button
                 type="button"
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-[#606060]"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
@@ -158,16 +157,16 @@ export function AdminLoginForm({
 
           <Button
             type="submit"
-            className="h-11 w-full gap-2 rounded-lg bg-teal-600 hover:bg-teal-700"
+            className="h-11 w-full gap-2 rounded-md bg-[#4880ff] hover:bg-[#3a6fe0]"
             disabled={loading}
           >
             <Lock className="size-4" strokeWidth={1.75} />
             {loading ? "Signing in…" : "Sign in to admin"}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-[#606060]">
             Customer ordering?{" "}
-            <Link href="/auth" className="font-semibold text-teal-700 hover:text-teal-800">
+            <Link href="/auth" className="font-semibold text-[#4880ff] hover:underline">
               Use customer login
             </Link>
           </p>

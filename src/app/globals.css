@@ -145,55 +145,56 @@
   }
 }
 
-/* Admin ops console — cool graphite + teal (scoped; storefront keeps yum kit) */
+/* Admin — DashStack light kit (scoped; storefront keeps yum kit)
+   Ref: https://www.figma.com/design/SCoBsBytGftJ0jY3ekIKl0 (Dashboard #1) */
 .admin-shell,
 .admin-theme {
-  --admin-ink: #0f1419;
-  --admin-rail: #161b22;
-  --admin-rail-edge: #2a3340;
-  --admin-rail-text: #e8edf2;
-  --admin-rail-muted: #8b95a5;
-  --admin-teal: #0d9488;
-  --admin-teal-deep: #0f766e;
-  --admin-teal-soft: #ecfdf8;
-  --admin-brass: #d4a017;
-  --admin-canvas: #f0f2f5;
+  --admin-blue: #4880ff;
+  --admin-ink: #202224;
+  --admin-muted: #606060;
+  --admin-canvas: #f5f6fa;
   --admin-panel: #ffffff;
-  --admin-line: #e2e6eb;
+  --admin-line: #e0e2e7;
+  --admin-success: #00b69b;
+  --admin-danger: #f93c65;
+  --admin-warn: #fcbe2d;
+  --admin-reject: #fd5454;
+  --admin-icon-purple: #8280ff;
+  --admin-icon-yellow: #fec53d;
+  --admin-icon-green: #4ad991;
+  --admin-icon-orange: #ff9066;
 
-  --primary: var(--admin-teal);
+  --primary: var(--admin-blue);
   --primary-foreground: #ffffff;
-  --ring: var(--admin-teal);
+  --ring: var(--admin-blue);
   --background: var(--admin-canvas);
-  --foreground: #111827;
+  --foreground: var(--admin-ink);
   --card: var(--admin-panel);
-  --card-foreground: #111827;
-  --muted: #e8ecf0;
-  --muted-foreground: #5c6570;
-  --accent: var(--admin-teal-soft);
-  --accent-foreground: var(--admin-teal-deep);
-  --secondary: #e8ecf0;
-  --secondary-foreground: #1a222d;
+  --card-foreground: var(--admin-ink);
+  --muted: #f1f4f9;
+  --muted-foreground: var(--admin-muted);
+  --accent: #eef3ff;
+  --accent-foreground: var(--admin-blue);
+  --secondary: #f1f4f9;
+  --secondary-foreground: var(--admin-ink);
   --border: var(--admin-line);
-  --input: #e8ecf0;
-  --destructive: #dc2626;
-  --yum-ink: #111827;
+  --input: #f5f6fa;
+  --destructive: var(--admin-danger);
+  --yum-ink: var(--admin-ink);
 }
 
 .admin-shell {
   overflow-x: hidden;
   color: var(--foreground);
   background-color: var(--admin-canvas);
-  background-image:
-    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(13, 148, 136, 0.07), transparent 55%),
-    radial-gradient(ellipse 50% 35% at 0% 100%, rgba(15, 20, 25, 0.04), transparent 50%),
-    linear-gradient(180deg, #f5f7fa 0%, var(--admin-canvas) 40%, #eef1f4 100%);
+  background-image: none;
 }
 
 .admin-panel {
-  border: 1px solid var(--admin-line);
+  border: none;
   background: var(--admin-panel);
-  box-shadow: 0 1px 2px rgba(15, 20, 25, 0.04), 0 8px 24px rgba(15, 20, 25, 0.04);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(32, 34, 36, 0.04), 0 8px 24px rgba(32, 34, 36, 0.04);
 }
 
 .admin-login-stage {
@@ -202,33 +203,32 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background:
-    radial-gradient(ellipse 80% 60% at 70% 20%, rgba(13, 148, 136, 0.35), transparent 55%),
-    linear-gradient(165deg, #0f1419 0%, #161b22 48%, #0a5f56 120%);
+  background: var(--admin-canvas);
 }
 
 .admin-rail {
-  background: linear-gradient(180deg, #161b22 0%, #0f1419 100%);
-  color: #e8edf2;
-  border-color: #2a3340;
+  background: #ffffff;
+  color: var(--admin-ink);
+  border-color: #e6e8ef;
+  box-shadow: 0 0 0 1px rgba(32, 34, 36, 0.04);
 }
 
 .admin-nav-active {
-  background: #0d9488;
+  background: var(--admin-blue);
   color: #fff;
-  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.28);
+  box-shadow: none;
 }
 
 .admin-icon-tile {
   display: inline-flex;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   align-items: center;
   justify-content: center;
-  border-radius: 0.75rem;
-  background: var(--admin-teal-soft);
-  color: var(--admin-teal-deep);
-  box-shadow: inset 0 0 0 1px rgba(13, 148, 136, 0.12);
+  border-radius: 9999px;
+  background: #eef3ff;
+  color: var(--admin-blue);
+  box-shadow: none;
 }
 
 @keyframes admin-pulse-ring {

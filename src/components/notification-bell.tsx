@@ -77,7 +77,7 @@ export function NotificationBell({
           "relative inline-flex items-center justify-center transition",
           variant === "customer"
             ? "size-[26px] rounded-[10px] bg-[#F5F5F5]"
-            : "size-8 rounded-lg border border-[var(--admin-line)] bg-[var(--admin-canvas)] text-muted-foreground hover:border-teal-300/60 hover:text-foreground",
+            : "size-8 rounded-full bg-[#f5f6fa] text-[#202224] hover:bg-[#eef0f5]",
         )}
       >
         {variant === "customer" ? (
