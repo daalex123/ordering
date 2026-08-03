@@ -32,7 +32,7 @@ export function BrandLogo({
         width={size}
         height={size}
         priority={priority}
-        className="rounded-2xl object-cover shadow-[0_8px_24px_rgba(57,23,19,0.18)]"
+        className="rounded-[20px] object-cover shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
         unoptimized
       />
       {showName ? (

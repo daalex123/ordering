@@ -60,7 +60,6 @@ export default function WelcomePage() {
     return () => window.clearTimeout(timer);
   }, [router]);
 
-  // Give the service worker a moment to become installable before fallback copy.
   useEffect(() => {
     if (phase !== "install" || iosHint) {
       setWaitingForPrompt(false);
@@ -107,33 +106,42 @@ export default function WelcomePage() {
 
   if (phase === "splash") {
     return (
-      <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-[#F5CB58] px-8">
-        <BrandLogo priority size={180} />
-        <p className="mt-5 text-center text-[28px] font-bold tracking-wide">
-          <span className="text-[#E95322]">Kings</span>{" "}
-          <span className="text-[#F8F8F8]">Bakamuna</span>
-        </p>
+      <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-8">
+        <div className="pointer-events-none absolute -top-20 left-1/2 size-56 -translate-x-1/2 rounded-full bg-[var(--glass-accent)]/25 blur-3xl" />
+        <div className="glass-enter relative z-10 flex flex-col items-center">
+          <div className="glass-panel-strong rounded-[28px] p-5">
+            <BrandLogo priority size={140} />
+          </div>
+          <p className="mt-6 text-center text-[28px] font-bold tracking-wide text-white">
+            Kings{" "}
+            <span className="text-[var(--glass-accent)]">Bakamuna</span>
+          </p>
+          <p className="mt-2 text-[13px] text-white/50">Restaurant & Billiards</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-[#F5CB58] px-6 pb-10 pt-14">
-      <div className="flex flex-1 flex-col items-center justify-center text-center">
-        <div className="rounded-[28px] bg-white p-5 shadow-[0_12px_40px_rgba(57,23,19,0.12)]">
+    <div className="relative flex min-h-[100dvh] flex-col px-6 pt-14 pb-10">
+      <div className="pointer-events-none absolute top-10 -right-10 size-40 rounded-full bg-[var(--glass-accent)]/20 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-24 -left-10 size-36 rounded-full bg-[var(--glass-accent)]/10 blur-3xl" />
+
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center">
+        <div className="glass-panel-strong w-full max-w-sm rounded-[28px] p-6">
           <Image
             src="/logo-kings-bakamuna.png"
             alt=""
             width={88}
             height={88}
-            className="mx-auto size-[88px] rounded-2xl object-cover"
+            className="mx-auto size-[88px] rounded-[20px] border border-white/20 object-cover"
             unoptimized
             priority
           />
-          <h1 className="mt-4 text-[22px] font-bold text-[#391713]">
+          <h1 className="mt-4 text-[22px] font-bold text-white">
             Add to Home Screen
           </h1>
-          <p className="mt-2 max-w-[260px] text-sm leading-relaxed text-[#391713]/75">
+          <p className="mt-2 text-[13px] leading-relaxed text-white/60">
             {iosHint
               ? "Tap Share, then Add to Home Screen for one-tap ordering."
               : "Install Kings Bakamuna like an app for faster ordering."}
@@ -141,13 +149,13 @@ export default function WelcomePage() {
         </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-3">
+      <div className="relative z-10 mx-auto flex w-full max-w-sm flex-col gap-3">
         {iosHint ? (
-          <div className="rounded-2xl bg-[#391713] px-4 py-3 text-left text-sm text-white">
+          <div className="rounded-[20px] border-2 border-[var(--glass-accent)] bg-[#1A0E08] px-4 py-3 text-left text-[13px] text-white shadow-[0_12px_40px_rgba(0,0,0,0.45)]">
             <p className="font-semibold">On iPhone / iPad</p>
-            <p className="mt-1 text-white/75">
+            <p className="mt-1 text-white/70">
               Tap the Share button, then choose{" "}
-              <span className="font-semibold text-[#F5CB58]">
+              <span className="font-semibold text-[var(--glass-accent)]">
                 Add to Home Screen
               </span>
               .
@@ -158,7 +166,7 @@ export default function WelcomePage() {
             type="button"
             disabled={installing}
             onClick={() => void install()}
-            className="flex h-12 items-center justify-center rounded-full bg-[#E95322] text-base font-semibold text-white shadow-[0_8px_20px_rgba(233,83,34,0.28)] disabled:opacity-70"
+            className="glass-cta flex h-12 items-center justify-center rounded-[20px] text-[15px] font-semibold disabled:opacity-70"
           >
             {installing ? "Installing…" : "Download app"}
           </button>
@@ -166,18 +174,20 @@ export default function WelcomePage() {
           <button
             type="button"
             disabled
-            className="flex h-12 items-center justify-center rounded-full bg-[#E95322] text-base font-semibold text-white opacity-70"
+            className="glass-cta flex h-12 items-center justify-center rounded-[20px] text-[15px] font-semibold opacity-70"
           >
             Preparing download…
           </button>
         ) : (
-          <div className="rounded-2xl bg-[#391713] px-4 py-3 text-left text-sm text-white">
+          <div className="rounded-[20px] border-2 border-[var(--glass-accent)] bg-[#1A0E08] px-4 py-3 text-left text-[13px] text-white shadow-[0_12px_40px_rgba(0,0,0,0.45)]">
             <p className="font-semibold">Install from your browser</p>
-            <p className="mt-1 text-white/75">
+            <p className="mt-1 text-white/70">
               Open the browser menu and choose{" "}
-              <span className="font-semibold text-[#F5CB58]">Install app</span>{" "}
+              <span className="font-semibold text-[var(--glass-accent)]">
+                Install app
+              </span>{" "}
               or{" "}
-              <span className="font-semibold text-[#F5CB58]">
+              <span className="font-semibold text-[var(--glass-accent)]">
                 Add to Home Screen
               </span>
               .
@@ -188,7 +198,7 @@ export default function WelcomePage() {
         <button
           type="button"
           onClick={goToMenu}
-          className="flex h-12 items-center justify-center rounded-full bg-white text-base font-semibold text-[#391713]"
+          className="glass-panel flex h-12 items-center justify-center rounded-[20px] text-[15px] font-semibold text-white"
         >
           Continue to menu
         </button>

@@ -12,6 +12,6 @@ export default function LaunchSplashPage() {
   }, [router]);
 
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#F5CB58]" />
+    <div className="flex min-h-[100dvh] items-center justify-center bg-[#0E0A08]" />
   );
 }

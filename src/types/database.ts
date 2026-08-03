@@ -57,11 +57,11 @@ export const DEFAULT_BRANDING = {
   logo_url: "/logo-kings-bakamuna.png" as string | null,
   favicon_url: "/logo-kings-bakamuna.png" as string | null,
   tagline: "Restaurant & Billiards",
-  primary_color: "#E95322",
+  primary_color: "#FF8A00",
   primary_foreground: "#ffffff",
-  accent_color: "#F5CB58",
-  background_color: "#F5F5F5",
-  surface_color: "#FFDECF",
+  accent_color: "#FF8A00",
+  background_color: "#0E0A08",
+  surface_color: "#2A1A12",
 };
 
 export type Category = {

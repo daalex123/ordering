@@ -7,7 +7,7 @@ import { InstallPrompt } from "@/components/customer/install-prompt";
 import { DevSwRegister } from "@/components/customer/dev-sw-register";
 import { PwaLaunchHandler } from "@/components/pwa-launch-handler";
 import { createClient } from "@/lib/supabase/server";
-import { getBranding } from "@/lib/branding";
+import { chromeThemeColor, getBranding } from "@/lib/branding";
 import type { RestaurantSettings } from "@/types/database";
 import "./globals.css";
 
@@ -50,10 +50,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: branding.tagline,
     applicationName: branding.name,
-    manifest: "/manifest.webmanifest",
     appleWebApp: {
       capable: true,
-      statusBarStyle: "default",
+      statusBarStyle: "black-translucent",
       title: branding.name,
     },
     icons: icon
@@ -77,8 +76,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export async function generateViewport(): Promise<Viewport> {
   const branding = await loadBranding();
+  const theme = chromeThemeColor(branding);
   return {
-    themeColor: branding.primary_color,
+    themeColor: [
+      { media: "(prefers-color-scheme: light)", color: theme },
+      { media: "(prefers-color-scheme: dark)", color: theme },
+    ],
+    colorScheme: "dark",
     width: "device-width",
     initialScale: 1,
     maximumScale: 1,
@@ -86,17 +90,23 @@ export async function generateViewport(): Promise<Viewport> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const branding = await loadBranding();
+  const chrome = chromeThemeColor(branding);
+
   return (
     <html
       lang="en"
       className={`${leagueSpartan.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-[var(--yum-sheet)] font-sans text-[var(--yum-ink)]">
+      <body
+        className="flex min-h-full flex-col font-sans text-white"
+        style={{ backgroundColor: chrome }}
+      >
         <SerwistProvider
           swUrl="/sw.js"
           disable={process.env.NODE_ENV === "development"}
