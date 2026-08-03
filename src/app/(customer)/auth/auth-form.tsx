@@ -141,6 +141,7 @@ export default function AuthForm() {
       goAfterAuth(next);
     } catch {
       toast.error("Verification failed");
+    } finally {
       setLoading(false);
     }
   }
@@ -283,7 +284,7 @@ export default function AuthForm() {
               <Field label="Full name">
                 <Input
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  onValueChange={setFullName}
                   className={glassField}
                 />
               </Field>
@@ -296,7 +297,7 @@ export default function AuthForm() {
                 autoComplete="tel"
                 placeholder="07XXXXXXXX"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onValueChange={setPhone}
                 className={glassField}
               />
             </Field>
@@ -326,8 +327,8 @@ export default function AuthForm() {
                 maxLength={6}
                 placeholder="••••••"
                 value={otp}
-                onChange={(e) =>
-                  setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                onValueChange={(value) =>
+                  setOtp(value.replace(/\D/g, "").slice(0, 6))
                 }
                 className={cn(
                   glassField,
@@ -373,7 +374,7 @@ export default function AuthForm() {
               <Field label="Full name">
                 <Input
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  onValueChange={setFullName}
                   className={glassField}
                 />
               </Field>
@@ -384,7 +385,7 @@ export default function AuthForm() {
                 required
                 placeholder="example@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onValueChange={setEmail}
                 className={glassField}
               />
             </Field>
@@ -395,7 +396,7 @@ export default function AuthForm() {
                   required
                   minLength={6}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onValueChange={setPassword}
                   className={cn(glassField, "pr-14")}
                 />
                 <button
