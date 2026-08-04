@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BrandingSettingsForm } from "@/components/admin/branding-settings-form";
+import { TelegramSettingsCard } from "@/components/admin/telegram-settings-card";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 
@@ -115,6 +116,8 @@ export default function AdminSettingsPage() {
         }}
         onSaved={(next) => setSettings({ ...settings, ...next })}
       />
+
+      <TelegramSettingsCard />
 
       <form
         onSubmit={save}

@@ -21,6 +21,7 @@ import { orderTicketLabel } from "@/lib/admin-order-ui";
 import { formatAddress, nextStatusFor, advanceLabel } from "@/lib/admin-order-flow";
 import { printOrderTicket } from "@/lib/print-order-ticket";
 import { notifyOrderSms } from "@/lib/notify-order-sms";
+import { notifyOrderTelegram } from "@/lib/notify-order-telegram";
 import {
   formatMoney,
   ORDER_STATUS_FLOW,
@@ -172,6 +173,13 @@ export default function AdminOrdersListPage() {
     toast.success(`Order → ${ORDER_STATUS_LABELS[next]}`);
     if (next === "completed") {
       notifyOrderSms(id, "completed");
+    }
+    if (
+      next === "confirmed" ||
+      next === "cancelled" ||
+      next === "completed"
+    ) {
+      notifyOrderTelegram(id, next);
     }
   }
 

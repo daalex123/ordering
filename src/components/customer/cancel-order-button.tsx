@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { notifyOrderTelegram } from "@/lib/notify-order-telegram";
 
 export function CancelOrderButton({ orderId }: { orderId: string }) {
   const router = useRouter();
@@ -18,6 +19,7 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
       toast.error(error.message);
       return;
     }
+    notifyOrderTelegram(orderId, "cancelled");
     toast.success("Order cancelled");
     router.refresh();
   }

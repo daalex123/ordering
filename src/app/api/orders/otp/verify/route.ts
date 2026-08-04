@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizePhone } from "@/lib/phone";
 import { verifyAndConsumeOtp } from "@/lib/otp-challenge";
+import { sendOrderTelegramById } from "@/lib/order-telegram";
 import type {
   FulfillmentType,
   PaymentMethod,
@@ -370,6 +371,10 @@ export async function POST(req: Request) {
     if (profileError) {
       console.error("order otp profile update", profileError);
     }
+
+    void sendOrderTelegramById(order.id, "placed").catch((err) => {
+      console.error("order telegram placed", err);
+    });
 
     return NextResponse.json({
       ok: true,

@@ -65,6 +65,7 @@ import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { MarkNotificationsRead } from "@/components/mark-notifications-read";
 import { useNotifications, adminOrderNotificationId } from "@/lib/notification-store";
 import { notifyOrderSms } from "@/lib/notify-order-sms";
+import { notifyOrderTelegram } from "@/lib/notify-order-telegram";
 import { cn } from "@/lib/utils";
 
 const BOARD_COLUMNS: OrderStatus[] = [
@@ -205,6 +206,13 @@ export default function AdminOrdersPage() {
     toast.success(ORDER_STATUS_LABELS[status]);
     if (status === "completed") {
       notifyOrderSms(orderId, "completed");
+    }
+    if (
+      status === "confirmed" ||
+      status === "cancelled" ||
+      status === "completed"
+    ) {
+      notifyOrderTelegram(orderId, status);
     }
     if (status === "cancelled" || status === "completed") {
       removeNotification(adminOrderNotificationId(orderId));

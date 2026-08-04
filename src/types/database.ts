@@ -48,6 +48,11 @@ export type RestaurantSettings = {
   accent_color: string;
   background_color: string;
   surface_color: string;
+  telegram_chat_id: string | null;
+  telegram_alerts_enabled: boolean;
+  telegram_link_code: string | null;
+  telegram_link_expires_at: string | null;
+  telegram_channel_title: string | null;
   created_at: string;
   updated_at: string;
 };
