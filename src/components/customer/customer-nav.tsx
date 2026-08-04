@@ -31,7 +31,7 @@ export function CustomerNav() {
 
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-      <ul className="glass-panel-strong pointer-events-auto mx-auto flex max-w-lg items-stretch justify-around rounded-[28px] bg-white/20 px-1.5 py-2 shadow-[0_12px_40px_rgba(0,0,0,0.45)]">
+      <ul className="glass-nav-dock pointer-events-auto mx-auto flex max-w-lg items-stretch justify-around rounded-[28px] px-1.5 py-2">
         {navLinks.map(({ href, label, icon: Icon }) => {
           const active =
             href === "/"
