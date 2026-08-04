@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizePhone } from "@/lib/phone";
-import { MAX_ATTEMPTS, otpMatches } from "@/lib/otp";
+import { verifyAndConsumeOtp } from "@/lib/otp-challenge";
 
 export const runtime = "nodejs";
 
@@ -53,44 +53,6 @@ export async function POST(req: Request) {
     }
 
     const admin = createAdminClient();
-    const { data: challenge, error: challengeError } = await admin
-      .from("otp_challenges")
-      .select("id, code_hash, attempts, expires_at, consumed_at")
-      .eq("phone", phone)
-      .is("consumed_at", null)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (challengeError || !challenge) {
-      return NextResponse.json(
-        { error: "No active code. Request a new one." },
-        { status: 400 },
-      );
-    }
-
-    if (new Date(challenge.expires_at).getTime() < Date.now()) {
-      return NextResponse.json(
-        { error: "Code expired. Request a new one." },
-        { status: 400 },
-      );
-    }
-
-    if (challenge.attempts >= MAX_ATTEMPTS) {
-      return NextResponse.json(
-        { error: "Too many attempts. Request a new code." },
-        { status: 429 },
-      );
-    }
-
-    if (!otpMatches(phone, code, challenge.code_hash)) {
-      await admin
-        .from("otp_challenges")
-        .update({ attempts: challenge.attempts + 1 })
-        .eq("id", challenge.id);
-      return NextResponse.json({ error: "Incorrect code" }, { status: 400 });
-    }
-
     const { data: existingPhone } = await admin
       .from("profiles")
       .select("id")
@@ -104,10 +66,18 @@ export async function POST(req: Request) {
       );
     }
 
-    await admin
-      .from("otp_challenges")
-      .update({ consumed_at: new Date().toISOString() })
-      .eq("id", challenge.id);
+    const verified = await verifyAndConsumeOtp({
+      phone,
+      code,
+      purpose: "auth",
+    });
+
+    if (!verified.ok) {
+      return NextResponse.json(
+        { error: verified.error },
+        { status: verified.status },
+      );
+    }
 
     const { data: created, error: createError } =
       await admin.auth.admin.createUser({

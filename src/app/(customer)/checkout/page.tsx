@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -28,11 +28,14 @@ import { cn } from "@/lib/utils";
 const glassField =
   "rounded-[20px] border border-white/15 bg-white/8 text-white placeholder:text-white/35 focus-visible:ring-[var(--glass-accent)]";
 
+type Step = "form" | "otp";
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clear } = useCart();
   const [settings, setSettings] = useState<RestaurantSettings | null>(null);
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<Step>("form");
   const [fulfillment, setFulfillment] = useState<FulfillmentType>("pickup");
   const [payment, setPayment] = useState<PaymentMethod>("pay_at_pickup");
   const [name, setName] = useState("");
@@ -41,6 +44,10 @@ export default function CheckoutPage() {
   const [line2, setLine2] = useState("");
   const [city, setCity] = useState("");
   const [notes, setNotes] = useState("");
+  const [otp, setOtp] = useState("");
+  const [maskedPhone, setMaskedPhone] = useState("");
+  const [resendIn, setResendIn] = useState(0);
+  const sendingRef = useRef(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -79,7 +86,13 @@ export default function CheckoutPage() {
     else setPayment("pay_at_pickup");
   }, [fulfillment]);
 
-  if (items.length === 0) {
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = window.setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [resendIn]);
+
+  if (items.length === 0 && step === "form") {
     return (
       <div className="px-5 pb-6">
         <CustomerPageHeader title="Checkout" backHref="/cart" className="px-0" />
@@ -103,246 +116,363 @@ export default function CheckoutPage() {
   const total = cartSubtotal + deliveryFee;
   const minOrder = Number(settings?.min_order ?? 0);
 
-  async function placeOrder(e: React.FormEvent) {
-    e.preventDefault();
+  function validateCheckout(): boolean {
     if (!settings?.is_open) {
       toast.error("Restaurant is currently closed");
-      return;
+      return false;
+    }
+    if (items.length === 0) {
+      toast.error("Cart is empty");
+      return false;
     }
     if (cartSubtotal < minOrder) {
       toast.error(`Minimum order is ${formatMoney(minOrder)}`);
-      return;
+      return false;
     }
     if (!phone.trim()) {
       toast.error("Phone number is required");
-      return;
+      return false;
     }
     if (fulfillment === "delivery") {
       if (!settings?.delivery_enabled) {
         toast.error("Delivery is not available");
-        return;
+        return false;
       }
       if (!line1.trim() || !city.trim()) {
         toast.error("Delivery address is required");
-        return;
+        return false;
       }
     }
+    return true;
+  }
 
-    setLoading(true);
+  async function sendOrderOtp(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (sendingRef.current || loading || resendIn > 0) return;
+    if (!validateCheckout()) return;
+
     const supabase = createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      setLoading(false);
       router.push("/auth?next=/checkout");
       return;
     }
 
-    const { data: order, error } = await supabase
-      .from("orders")
-      .insert({
-        user_id: user.id,
-        status: "pending",
-        fulfillment_type: fulfillment,
-        delivery_address:
-          fulfillment === "delivery"
-            ? { line1, line2: line2 || undefined, city }
-            : null,
-        customer_phone: phone.trim(),
-        customer_name: name.trim() || null,
-        payment_method: payment,
-        subtotal: cartSubtotal,
-        delivery_fee: deliveryFee,
-        total,
-        notes: notes.trim() || null,
-      })
-      .select("id")
-      .single();
-
-    if (error || !order) {
+    sendingRef.current = true;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/orders/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = (await res.json()) as {
+        error?: string;
+        masked?: string;
+        sentTo?: string;
+        retryAfterSec?: number;
+        resendAfterSec?: number;
+      };
+      if (!res.ok) {
+        if (data.retryAfterSec) setResendIn(data.retryAfterSec);
+        toast.error(data.error || "Could not send code");
+        return;
+      }
+      setMaskedPhone(data.masked || data.sentTo || phone);
+      setStep("otp");
+      setOtp("");
+      setResendIn(data.resendAfterSec ?? 30);
+      toast.success(`Code sent to ${data.masked || phone}`);
+    } catch {
+      toast.error("Could not send code. Try again.");
+    } finally {
       setLoading(false);
-      toast.error(error?.message ?? "Could not place order");
-      return;
+      sendingRef.current = false;
     }
+  }
 
-    const { error: itemsError } = await supabase.from("order_items").insert(
-      items.map((item) => ({
-        order_id: order.id,
-        product_id: item.productId,
-        product_name: item.name,
-        portion_name: item.portionName || null,
-        unit_price: item.price,
-        quantity: item.quantity,
-        notes: item.notes || null,
-      })),
-    );
+  async function verifyOrderOtp(e: React.FormEvent) {
+    e.preventDefault();
+    if (loading || otp.length !== 6) return;
+    if (!validateCheckout()) return;
 
-    if (itemsError) {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/orders/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone,
+          code: otp,
+          fulfillment,
+          payment,
+          name,
+          line1,
+          line2,
+          city,
+          notes,
+          items: items.map((item) => ({
+            productId: item.productId,
+            portionId: item.portionId ?? null,
+            portionName: item.portionName ?? null,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            notes: item.notes || null,
+          })),
+        }),
+      });
+      const data = (await res.json()) as {
+        error?: string;
+        orderId?: string;
+      };
+      if (!res.ok || !data.orderId) {
+        toast.error(data.error || "Could not place order");
+        return;
+      }
+
+      clear();
+      notifyOrderSms(data.orderId, "placed");
+      toast.success("Order placed!");
+      router.push(`/orders/${data.orderId}`);
+    } catch {
+      toast.error("Could not place order. Try again.");
+    } finally {
       setLoading(false);
-      toast.error(itemsError.message);
-      return;
     }
-
-    await supabase
-      .from("profiles")
-      .update({
-        full_name: name.trim() || null,
-        phone: phone.trim(),
-        default_address:
-          fulfillment === "delivery"
-            ? { line1, line2: line2 || undefined, city }
-            : undefined,
-      })
-      .eq("id", user.id);
-
-    clear();
-    notifyOrderSms(order.id, "placed");
-    setLoading(false);
-    toast.success("Order placed!");
-    router.push(`/orders/${order.id}`);
   }
 
   return (
     <div className="px-5 pb-6">
       <CustomerPageHeader title="Checkout" backHref="/cart" className="px-0" />
-      <form
-        onSubmit={placeOrder}
-        className="glass-panel-strong space-y-5 rounded-[28px] px-4 pt-5 pb-5"
-      >
-        <div className="space-y-2.5">
-          <Label className="text-[13px] font-medium text-white/70">
-            Fulfillment
-          </Label>
-          <div className="grid grid-cols-2 gap-2">
-            {(
-              [
-                ["pickup", "Pickup"],
-                ...(settings?.delivery_enabled
-                  ? ([["delivery", "Delivery"]] as const)
-                  : []),
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFulfillment(value)}
-                className={cn(
-                  "rounded-[20px] py-3 text-[14px] font-semibold transition",
-                  fulfillment === value
-                    ? "bg-[var(--glass-accent)] text-white shadow-[0_6px_16px_rgba(255,138,0,0.35)]"
-                    : "glass-panel text-white/75",
-                )}
+      <div className="glass-panel-strong space-y-5 rounded-[28px] px-4 pt-5 pb-5">
+        {step === "form" ? (
+          <form onSubmit={sendOrderOtp} className="space-y-5">
+            <div className="space-y-2.5">
+              <Label className="text-[13px] font-medium text-white/70">
+                Fulfillment
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    ["pickup", "Pickup"],
+                    ...(settings?.delivery_enabled
+                      ? ([["delivery", "Delivery"]] as const)
+                      : []),
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setFulfillment(value)}
+                    className={cn(
+                      "rounded-[20px] py-3 text-[14px] font-semibold transition",
+                      fulfillment === value
+                        ? "bg-[var(--glass-accent)] text-white shadow-[0_6px_16px_rgba(255,138,0,0.35)]"
+                        : "glass-panel text-white/75",
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              <Field label="Name">
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={glassField}
+                />
+              </Field>
+              <Field label="Phone *">
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  className={glassField}
+                />
+              </Field>
+            </div>
+
+            {fulfillment === "delivery" ? (
+              <div className="glass-panel grid gap-3 rounded-[20px] p-4">
+                <Field label="Address line 1 *">
+                  <Input
+                    value={line1}
+                    onChange={(e) => setLine1(e.target.value)}
+                    required
+                    className={glassField}
+                  />
+                </Field>
+                <Field label="Address line 2">
+                  <Input
+                    value={line2}
+                    onChange={(e) => setLine2(e.target.value)}
+                    className={glassField}
+                  />
+                </Field>
+                <Field label="City *">
+                  <Input
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    required
+                    className={glassField}
+                  />
+                </Field>
+              </div>
+            ) : null}
+
+            <div className="space-y-2">
+              <Label className="text-[13px] font-medium text-white/70">
+                Payment
+              </Label>
+              <Select
+                value={payment}
+                onValueChange={(v) => {
+                  if (v) setPayment(v as PaymentMethod);
+                }}
               >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
+                <SelectTrigger className={cn(glassField, "h-11")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {fulfillment === "delivery" ? (
+                    <SelectItem value="cod">Cash on delivery</SelectItem>
+                  ) : (
+                    <SelectItem value="pay_at_pickup">Pay at pickup</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="grid gap-3">
-          <Field label="Name">
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={glassField}
+            <Field label="Order notes">
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+                className={glassField}
+              />
+            </Field>
+
+            <OrderTotals
+              cartSubtotal={cartSubtotal}
+              deliveryFee={deliveryFee}
+              total={total}
             />
-          </Field>
-          <Field label="Phone *">
-            <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              className={glassField}
+
+            <button
+              type="submit"
+              disabled={loading || resendIn > 0}
+              className="glass-cta w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
+            >
+              {loading
+                ? "Sending code..."
+                : resendIn > 0
+                  ? `Wait ${resendIn}s`
+                  : "Send verification code"}
+            </button>
+            <p className="text-center text-[12px] text-white/45">
+              We&apos;ll SMS a code to confirm your order
+            </p>
+          </form>
+        ) : (
+          <form onSubmit={verifyOrderOtp} className="space-y-5">
+            <div className="space-y-1 text-center">
+              <p className="text-[16px] font-semibold text-white">
+                Confirm your order
+              </p>
+              <p className="text-[13px] text-white/60">
+                Enter the 6-digit code sent to{" "}
+                <span className="font-medium text-white/85">{maskedPhone}</span>
+              </p>
+            </div>
+
+            <Field label="Verification code">
+              <Input
+                type="text"
+                required
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="\d{6}"
+                maxLength={6}
+                placeholder="••••••"
+                value={otp}
+                onValueChange={(value) =>
+                  setOtp(value.replace(/\D/g, "").slice(0, 6))
+                }
+                className={cn(
+                  glassField,
+                  "h-12 text-center text-[18px] tracking-[0.4em]",
+                )}
+              />
+            </Field>
+
+            <OrderTotals
+              cartSubtotal={cartSubtotal}
+              deliveryFee={deliveryFee}
+              total={total}
             />
-          </Field>
-        </div>
 
-        {fulfillment === "delivery" ? (
-          <div className="glass-panel grid gap-3 rounded-[20px] p-4">
-            <Field label="Address line 1 *">
-              <Input
-                value={line1}
-                onChange={(e) => setLine1(e.target.value)}
-                required
-                className={glassField}
-              />
-            </Field>
-            <Field label="Address line 2">
-              <Input
-                value={line2}
-                onChange={(e) => setLine2(e.target.value)}
-                className={glassField}
-              />
-            </Field>
-            <Field label="City *">
-              <Input
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                required
-                className={glassField}
-              />
-            </Field>
-          </div>
-        ) : null}
+            <button
+              type="submit"
+              disabled={loading || otp.length !== 6}
+              className="glass-cta w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
+            >
+              {loading ? "Placing order..." : "Verify & place order"}
+            </button>
+            <button
+              type="button"
+              className="w-full text-[13px] font-semibold text-[var(--glass-accent)] disabled:opacity-50"
+              disabled={loading || resendIn > 0}
+              onClick={() => void sendOrderOtp()}
+            >
+              {resendIn > 0 ? `Resend code in ${resendIn}s` : "Resend code"}
+            </button>
+            <button
+              type="button"
+              className="w-full text-[13px] font-medium text-white/45"
+              disabled={loading}
+              onClick={() => {
+                setOtp("");
+                setStep("form");
+              }}
+            >
+              Edit details
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
 
-        <div className="space-y-2">
-          <Label className="text-[13px] font-medium text-white/70">
-            Payment
-          </Label>
-          <Select
-            value={payment}
-            onValueChange={(v) => {
-              if (v) setPayment(v as PaymentMethod);
-            }}
-          >
-            <SelectTrigger className={cn(glassField, "h-11")}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {fulfillment === "delivery" ? (
-                <SelectItem value="cod">Cash on delivery</SelectItem>
-              ) : (
-                <SelectItem value="pay_at_pickup">Pay at pickup</SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Field label="Order notes">
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={2}
-            className={glassField}
-          />
-        </Field>
-
-        <div className="glass-panel space-y-2 rounded-[20px] p-4 text-[14px] text-white/80">
-          <div className="flex justify-between">
-            <span>Subtotal</span>
-            <span>{formatMoney(cartSubtotal)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Delivery</span>
-            <span>{formatMoney(deliveryFee)}</span>
-          </div>
-          <div className="flex justify-between border-t border-dashed border-white/20 pt-2 text-[16px] font-bold text-white">
-            <span>Total</span>
-            <span className="text-[var(--glass-accent)]">
-              {formatMoney(total)}
-            </span>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="glass-cta w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
-        >
-          {loading ? "Placing order..." : "Place order"}
-        </button>
-      </form>
+function OrderTotals({
+  cartSubtotal,
+  deliveryFee,
+  total,
+}: {
+  cartSubtotal: number;
+  deliveryFee: number;
+  total: number;
+}) {
+  return (
+    <div className="glass-panel space-y-2 rounded-[20px] p-4 text-[14px] text-white/80">
+      <div className="flex justify-between">
+        <span>Subtotal</span>
+        <span>{formatMoney(cartSubtotal)}</span>
+      </div>
+      <div className="flex justify-between">
+        <span>Delivery</span>
+        <span>{formatMoney(deliveryFee)}</span>
+      </div>
+      <div className="flex justify-between border-t border-dashed border-white/20 pt-2 text-[16px] font-bold text-white">
+        <span>Total</span>
+        <span className="text-[var(--glass-accent)]">{formatMoney(total)}</span>
+      </div>
     </div>
   );
 }

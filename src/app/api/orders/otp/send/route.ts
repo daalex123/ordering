@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { normalizePhone } from "@/lib/phone";
 import { sendOtpChallenge } from "@/lib/otp-challenge";
 
@@ -7,10 +7,15 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as {
-      phone?: string;
-      purpose?: "signup";
-    };
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = (await req.json()) as { phone?: string };
     const phone = normalizePhone(body.phone ?? "");
     if (!phone) {
       return NextResponse.json(
@@ -19,29 +24,11 @@ export async function POST(req: Request) {
       );
     }
 
-    if (body.purpose === "signup") {
-      const admin = createAdminClient();
-      const { data: existingPhone } = await admin
-        .from("profiles")
-        .select("id")
-        .eq("phone", phone)
-        .maybeSingle();
-
-      if (existingPhone?.id) {
-        return NextResponse.json(
-          {
-            error:
-              "This mobile number is already registered. Please log in.",
-          },
-          { status: 409 },
-        );
-      }
-    }
-
     const result = await sendOtpChallenge({
       phone,
-      purpose: "auth",
-      message: (code) => `Kings Bakamuna code: ${code}. Valid for 5 minutes.`,
+      purpose: "order",
+      message: (code) =>
+        `Your Kings Bakamuna order code: ${code}. Valid for 5 minutes.`,
     });
 
     if (!result.ok) {
@@ -65,7 +52,7 @@ export async function POST(req: Request) {
       resendAfterSec: result.resendAfterSec,
     });
   } catch (err) {
-    console.error("otp send", err);
+    console.error("order otp send", err);
     return NextResponse.json(
       {
         error:
