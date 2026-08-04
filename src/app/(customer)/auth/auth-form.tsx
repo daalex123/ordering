@@ -423,7 +423,7 @@ export default function AuthForm() {
             {mode === "signin" ? "Sign Up" : "Log In"}
           </button>
         </p>
-        <p className="relative z-10 mt-3 text-center text-[12px] text-white/40">
+        {/* <p className="relative z-10 mt-3 text-center text-[12px] text-white/40">
           Restaurant staff?{" "}
           <a
             href="/admin/login"
@@ -431,7 +431,7 @@ export default function AuthForm() {
           >
             Admin login
           </a>
-        </p>
+        </p> */}
       </div>
     </div>
   );

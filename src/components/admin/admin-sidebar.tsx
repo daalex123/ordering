@@ -12,6 +12,7 @@ import {
   ExternalLink,
   BarChart3,
   Columns3,
+  Users,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -26,6 +27,7 @@ const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Kitchen Board", icon: Columns3, exact: true },
   { href: "/admin/orders/list", label: "Orders", icon: ClipboardList },
+  { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/menu", label: "Products", icon: UtensilsCrossed },
   { href: "/admin/reports", label: "Reports", icon: BarChart3 },
   { href: "/admin/settings", label: "Settings", icon: Settings },
