@@ -1,94 +1,9 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { normalizePhone, phoneToAuthEmail } from "@/lib/phone";
+import { normalizePhone } from "@/lib/phone";
 import { MAX_ATTEMPTS, otpMatches } from "@/lib/otp";
 
 export const runtime = "nodejs";
-
-async function findOrCreateUser(
-  admin: ReturnType<typeof createAdminClient>,
-  phone: string,
-  fullName: string | null,
-) {
-  const email = phoneToAuthEmail(phone);
-
-  const { data: byPhone } = await admin
-    .from("profiles")
-    .select("id")
-    .eq("phone", phone)
-    .maybeSingle();
-
-  if (byPhone?.id) {
-    if (fullName) {
-      await admin
-        .from("profiles")
-        .update({ full_name: fullName, phone })
-        .eq("id", byPhone.id);
-    } else {
-      await admin.from("profiles").update({ phone }).eq("id", byPhone.id);
-    }
-    // Ensure auth email exists for magic-link session
-    const { data: userData } = await admin.auth.admin.getUserById(byPhone.id);
-    if (userData.user && !userData.user.email) {
-      await admin.auth.admin.updateUserById(byPhone.id, {
-        email,
-        email_confirm: true,
-        user_metadata: {
-          ...userData.user.user_metadata,
-          phone,
-        },
-      });
-    }
-    return { userId: byPhone.id, email: userData.user?.email || email };
-  }
-
-  const { data: created, error: createError } =
-    await admin.auth.admin.createUser({
-      email,
-      email_confirm: true,
-      user_metadata: {
-        full_name: fullName,
-        phone,
-      },
-    });
-
-  if (!createError && created.user) {
-    await admin
-      .from("profiles")
-      .update({
-        phone,
-        ...(fullName ? { full_name: fullName } : {}),
-      })
-      .eq("id", created.user.id);
-    return { userId: created.user.id, email };
-  }
-
-  // Already registered — recover via generateLink (returns user)
-  if (
-    createError &&
-    (/already|registered|exists/i.test(createError.message) ||
-      createError.status === 422)
-  ) {
-    const { data: linkProbe, error: linkErr } =
-      await admin.auth.admin.generateLink({
-        type: "magiclink",
-        email,
-      });
-    if (linkErr || !linkProbe.user) {
-      throw createError;
-    }
-    await admin
-      .from("profiles")
-      .update({
-        phone,
-        ...(fullName ? { full_name: fullName } : {}),
-      })
-      .eq("id", linkProbe.user.id);
-    return { userId: linkProbe.user.id, email };
-  }
-
-  throw createError ?? new Error("Could not create account");
-}
 
 export async function POST(req: Request) {
   try {
@@ -96,11 +11,15 @@ export async function POST(req: Request) {
       phone?: string;
       code?: string;
       fullName?: string;
+      email?: string;
+      password?: string;
     };
 
     const phone = normalizePhone(body.phone ?? "");
     const code = (body.code ?? "").trim();
-    const fullName = body.fullName?.trim() || null;
+    const fullName = body.fullName?.trim() || "";
+    const email = (body.email ?? "").trim().toLowerCase();
+    const password = body.password ?? "";
 
     if (!phone) {
       return NextResponse.json(
@@ -111,6 +30,24 @@ export async function POST(req: Request) {
     if (!/^\d{6}$/.test(code)) {
       return NextResponse.json(
         { error: "Enter the 6-digit code from your SMS" },
+        { status: 400 },
+      );
+    }
+    if (!fullName) {
+      return NextResponse.json(
+        { error: "Enter your full name" },
+        { status: 400 },
+      );
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { error: "Enter a valid email address" },
+        { status: 400 },
+      );
+    }
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: "Password must be at least 6 characters" },
         { status: 400 },
       );
     }
@@ -154,30 +91,68 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Incorrect code" }, { status: 400 });
     }
 
+    const { data: existingPhone } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("phone", phone)
+      .maybeSingle();
+
+    if (existingPhone?.id) {
+      return NextResponse.json(
+        { error: "This mobile number is already registered. Please log in." },
+        { status: 409 },
+      );
+    }
+
     await admin
       .from("otp_challenges")
       .update({ consumed_at: new Date().toISOString() })
       .eq("id", challenge.id);
 
-    const { email } = await findOrCreateUser(admin, phone, fullName);
-
-    const { data: linkData, error: linkError } =
-      await admin.auth.admin.generateLink({
-        type: "magiclink",
+    const { data: created, error: createError } =
+      await admin.auth.admin.createUser({
         email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: fullName,
+          phone,
+        },
       });
 
-    if (linkError || !linkData.properties?.hashed_token) {
-      console.error("generateLink", linkError);
+    if (createError || !created.user) {
+      if (
+        createError &&
+        (/already|registered|exists/i.test(createError.message) ||
+          createError.status === 422)
+      ) {
+        return NextResponse.json(
+          { error: "An account with this email already exists. Please log in." },
+          { status: 409 },
+        );
+      }
+      console.error("register createUser", createError);
       return NextResponse.json(
-        { error: "Could not start session" },
+        { error: createError?.message || "Could not create account" },
         { status: 500 },
       );
     }
 
+    const { error: profileError } = await admin
+      .from("profiles")
+      .update({
+        phone,
+        full_name: fullName,
+      })
+      .eq("id", created.user.id);
+
+    if (profileError) {
+      console.error("register profile update", profileError);
+    }
+
     return NextResponse.json({
       ok: true,
-      token_hash: linkData.properties.hashed_token,
+      email,
     });
   } catch (err) {
     console.error("otp verify", err);

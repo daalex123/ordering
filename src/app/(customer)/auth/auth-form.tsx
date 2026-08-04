@@ -28,8 +28,7 @@ function safeNextPath(raw: string | null): string {
   return raw;
 }
 
-type Method = "phone" | "email";
-type Step = "phone" | "otp" | "email";
+type Step = "form" | "otp";
 
 export default function AuthForm() {
   const searchParams = useSearchParams();
@@ -37,9 +36,8 @@ export default function AuthForm() {
   const initialMode =
     searchParams.get("mode") === "signup" ? "signup" : "signin";
 
-  const [method, setMethod] = useState<Method>("phone");
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
-  const [step, setStep] = useState<Step>("phone");
+  const [step, setStep] = useState<Step>("form");
 
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
@@ -68,16 +66,41 @@ export default function AuthForm() {
     window.location.assign(path);
   }
 
+  function resetToSignIn() {
+    setMode("signin");
+    setStep("form");
+    setOtp("");
+    setResendIn(0);
+  }
+
   async function sendOtp(e?: React.FormEvent) {
     e?.preventDefault();
     if (sendingRef.current || loading || resendIn > 0) return;
+
+    if (!fullName.trim()) {
+      toast.error("Enter your full name");
+      return;
+    }
+    if (!email.trim()) {
+      toast.error("Enter your email");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (!phone.trim()) {
+      toast.error("Enter your mobile number");
+      return;
+    }
+
     sendingRef.current = true;
     setLoading(true);
     try {
       const res = await fetch("/api/auth/otp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone, purpose: "signup" }),
       });
       const data = (await res.json()) as {
         error?: string;
@@ -105,7 +128,7 @@ export default function AuthForm() {
     }
   }
 
-  async function verifyOtp(e: React.FormEvent) {
+  async function verifyOtpAndRegister(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
@@ -115,29 +138,32 @@ export default function AuthForm() {
         body: JSON.stringify({
           phone,
           code: otp,
-          fullName: mode === "signup" ? fullName : undefined,
+          fullName,
+          email,
+          password,
         }),
       });
       const data = (await res.json()) as {
         error?: string;
-        token_hash?: string;
+        email?: string;
       };
-      if (!res.ok || !data.token_hash) {
+      if (!res.ok) {
         toast.error(data.error || "Verification failed");
         return;
       }
 
       const supabase = createClient();
-      const { error } = await supabase.auth.verifyOtp({
-        token_hash: data.token_hash,
-        type: "email",
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email || email,
+        password,
       });
       if (error) {
         toast.error(error.message);
+        resetToSignIn();
         return;
       }
 
-      toast.success(mode === "signup" ? "Welcome!" : "Welcome back");
+      toast.success("Account created — welcome!");
       goAfterAuth(next);
     } catch {
       toast.error("Verification failed");
@@ -175,31 +201,9 @@ export default function AuthForm() {
     goAfterAuth(next);
   }
 
-  async function signUpEmail(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    });
-    if (error) {
-      setLoading(false);
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Account created — you can order now");
-    goAfterAuth(next);
-  }
-
   const title =
-    method === "phone"
-      ? step === "otp"
-        ? "Enter code"
-        : mode === "signin"
-          ? "Log In"
-          : "Sign Up"
+    mode === "signup" && step === "otp"
+      ? "Enter code"
       : mode === "signin"
         ? "Log In"
         : "Sign Up";
@@ -226,159 +230,25 @@ export default function AuthForm() {
           <p className="text-[13px] text-white/55">Kings Bakamuna</p>
         </div>
 
-        <div className="relative z-10 mb-5 flex rounded-full border border-white/15 bg-white/8 p-1">
-          <button
-            type="button"
-            className={cn(
-              "flex-1 rounded-full py-2.5 text-[13px] font-semibold transition",
-              method === "phone"
-                ? "bg-[var(--glass-accent)] text-white shadow-[0_6px_16px_rgba(255,138,0,0.35)]"
-                : "text-white/60",
-            )}
-            onClick={() => {
-              setMethod("phone");
-              setStep("phone");
-            }}
-          >
-            Mobile OTP
-          </button>
-          <button
-            type="button"
-            className={cn(
-              "flex-1 rounded-full py-2.5 text-[13px] font-semibold transition",
-              method === "email"
-                ? "bg-[var(--glass-accent)] text-white shadow-[0_6px_16px_rgba(255,138,0,0.35)]"
-                : "text-white/60",
-            )}
-            onClick={() => {
-              setMethod("email");
-              setStep("email");
-            }}
-          >
-            Email
-          </button>
-        </div>
-
         <div className="relative z-10 mb-6 space-y-1.5">
           <h2 className="text-[24px] font-bold text-white">
-            {method === "phone" && step === "otp"
+            {mode === "signup" && step === "otp"
               ? "Verify number"
               : mode === "signin"
                 ? "Welcome"
                 : "Create account"}
           </h2>
           <p className="text-[13px] leading-relaxed text-white/55">
-            {method === "phone" && step === "otp"
+            {mode === "signup" && step === "otp"
               ? `We sent a 6-digit code to ${maskedPhone}.`
-              : method === "phone"
-                ? "We'll text you a one-time code to sign in."
-                : mode === "signin"
-                  ? "Sign in with email and password."
-                  : "Create an account with email and password."}
+              : mode === "signin"
+                ? "Sign in with email and password."
+                : "Create an account, then verify your mobile number."}
           </p>
         </div>
 
-        {method === "phone" && step === "phone" ? (
-          <form onSubmit={sendOtp} className="relative z-10 space-y-4">
-            {mode === "signup" ? (
-              <Field label="Full name">
-                <Input
-                  value={fullName}
-                  onValueChange={setFullName}
-                  className={glassField}
-                />
-              </Field>
-            ) : null}
-            <Field label="Mobile number">
-              <Input
-                type="tel"
-                required
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="07XXXXXXXX"
-                value={phone}
-                onValueChange={setPhone}
-                className={glassField}
-              />
-            </Field>
-            <button
-              type="submit"
-              disabled={loading || resendIn > 0}
-              className="glass-cta mt-2 w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
-            >
-              {loading
-                ? "Sending..."
-                : resendIn > 0
-                  ? `Wait ${resendIn}s`
-                  : "Send code"}
-            </button>
-          </form>
-        ) : null}
-
-        {method === "phone" && step === "otp" ? (
-          <form onSubmit={verifyOtp} className="relative z-10 space-y-4">
-            <Field label="Verification code">
-              <Input
-                type="text"
-                required
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                pattern="\d{6}"
-                maxLength={6}
-                placeholder="••••••"
-                value={otp}
-                onValueChange={(value) =>
-                  setOtp(value.replace(/\D/g, "").slice(0, 6))
-                }
-                className={cn(
-                  glassField,
-                  "text-center text-[18px] tracking-[0.4em]",
-                )}
-              />
-            </Field>
-            <button
-              type="submit"
-              disabled={loading || otp.length !== 6}
-              className="glass-cta mt-2 w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
-            >
-              {loading ? "Verifying..." : "Verify & continue"}
-            </button>
-            <button
-              type="button"
-              className="w-full text-[13px] font-semibold text-[var(--glass-accent)] disabled:opacity-50"
-              disabled={loading || resendIn > 0}
-              onClick={() => void sendOtp()}
-            >
-              {resendIn > 0 ? `Resend code in ${resendIn}s` : "Resend code"}
-            </button>
-            <button
-              type="button"
-              className="w-full text-[13px] font-medium text-white/45"
-              disabled={loading}
-              onClick={() => {
-                setOtp("");
-                setStep("phone");
-              }}
-            >
-              Change number
-            </button>
-          </form>
-        ) : null}
-
-        {method === "email" ? (
-          <form
-            onSubmit={mode === "signin" ? signInEmail : signUpEmail}
-            className="relative z-10 space-y-4"
-          >
-            {mode === "signup" ? (
-              <Field label="Full name">
-                <Input
-                  value={fullName}
-                  onValueChange={setFullName}
-                  className={glassField}
-                />
-              </Field>
-            ) : null}
+        {mode === "signin" ? (
+          <form onSubmit={signInEmail} className="relative z-10 space-y-4">
             <Field label="Email">
               <Input
                 type="email"
@@ -413,13 +283,125 @@ export default function AuthForm() {
               disabled={loading}
               className="glass-cta mt-2 w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
             >
+              {loading ? "Signing in..." : "Log In"}
+            </button>
+          </form>
+        ) : null}
+
+        {mode === "signup" && step === "form" ? (
+          <form onSubmit={sendOtp} className="relative z-10 space-y-4">
+            <Field label="Full name">
+              <Input
+                required
+                value={fullName}
+                onValueChange={setFullName}
+                className={glassField}
+              />
+            </Field>
+            <Field label="Email">
+              <Input
+                type="email"
+                required
+                placeholder="example@example.com"
+                value={email}
+                onValueChange={setEmail}
+                className={glassField}
+              />
+            </Field>
+            <Field label="Password">
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={6}
+                  value={password}
+                  onValueChange={setPassword}
+                  className={cn(glassField, "pr-14")}
+                />
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-[12px] font-semibold text-[var(--glass-accent)]"
+                  onClick={() => setShowPassword((v) => !v)}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </Field>
+            <Field label="Mobile number">
+              <Input
+                type="tel"
+                required
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="07XXXXXXXX"
+                value={phone}
+                onValueChange={setPhone}
+                className={glassField}
+              />
+            </Field>
+            <button
+              type="submit"
+              disabled={loading || resendIn > 0}
+              className="glass-cta mt-2 w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
+            >
               {loading
-                ? mode === "signin"
-                  ? "Signing in..."
-                  : "Creating..."
-                : mode === "signin"
-                  ? "Log In"
-                  : "Sign Up"}
+                ? "Sending code..."
+                : resendIn > 0
+                  ? `Wait ${resendIn}s`
+                  : "Send verification code"}
+            </button>
+          </form>
+        ) : null}
+
+        {mode === "signup" && step === "otp" ? (
+          <form
+            onSubmit={verifyOtpAndRegister}
+            className="relative z-10 space-y-4"
+          >
+            <Field label="Verification code">
+              <Input
+                type="text"
+                required
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="\d{6}"
+                maxLength={6}
+                placeholder="••••••"
+                value={otp}
+                onValueChange={(value) =>
+                  setOtp(value.replace(/\D/g, "").slice(0, 6))
+                }
+                className={cn(
+                  glassField,
+                  "text-center text-[18px] tracking-[0.4em]",
+                )}
+              />
+            </Field>
+            <button
+              type="submit"
+              disabled={loading || otp.length !== 6}
+              className="glass-cta mt-2 w-full rounded-[20px] py-3.5 text-[15px] font-semibold disabled:opacity-60"
+            >
+              {loading ? "Creating account..." : "Verify & create account"}
+            </button>
+            <button
+              type="button"
+              className="w-full text-[13px] font-semibold text-[var(--glass-accent)] disabled:opacity-50"
+              disabled={loading || resendIn > 0}
+              onClick={() => void sendOtp()}
+            >
+              {resendIn > 0 ? `Resend code in ${resendIn}s` : "Resend code"}
+            </button>
+            <button
+              type="button"
+              className="w-full text-[13px] font-medium text-white/45"
+              disabled={loading}
+              onClick={() => {
+                setOtp("");
+                setStep("form");
+              }}
+            >
+              Edit details
             </button>
           </form>
         ) : null}
@@ -433,8 +415,9 @@ export default function AuthForm() {
             className="font-bold text-[var(--glass-accent)]"
             onClick={() => {
               setMode(mode === "signin" ? "signup" : "signin");
-              setStep(method === "phone" ? "phone" : "email");
+              setStep("form");
               setOtp("");
+              setResendIn(0);
             }}
           >
             {mode === "signin" ? "Sign Up" : "Log In"}

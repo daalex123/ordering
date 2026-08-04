@@ -11,7 +11,10 @@ const HOURLY_LIMIT = 10;
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as { phone?: string };
+    const body = (await req.json()) as {
+      phone?: string;
+      purpose?: "signup";
+    };
     const phone = normalizePhone(body.phone ?? "");
     if (!phone) {
       return NextResponse.json(
@@ -21,6 +24,25 @@ export async function POST(req: Request) {
     }
 
     const admin = createAdminClient();
+
+    if (body.purpose === "signup") {
+      const { data: existingPhone } = await admin
+        .from("profiles")
+        .select("id")
+        .eq("phone", phone)
+        .maybeSingle();
+
+      if (existingPhone?.id) {
+        return NextResponse.json(
+          {
+            error:
+              "This mobile number is already registered. Please log in.",
+          },
+          { status: 409 },
+        );
+      }
+    }
+
     const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { count } = await admin
       .from("otp_challenges")
