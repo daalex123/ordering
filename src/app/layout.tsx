@@ -7,7 +7,13 @@ import { InstallPrompt } from "@/components/customer/install-prompt";
 import { DevSwRegister } from "@/components/customer/dev-sw-register";
 import { PwaLaunchHandler } from "@/components/pwa-launch-handler";
 import { createClient } from "@/lib/supabase/server";
-import { chromeThemeColor, getBranding } from "@/lib/branding";
+import {
+  appleStatusBarStyle,
+  chromeIsDark,
+  chromeThemeColor,
+  getBranding,
+} from "@/lib/branding";
+import { ThemeColorSync } from "@/components/theme-color-sync";
 import type { RestaurantSettings } from "@/types/database";
 import "./globals.css";
 
@@ -40,6 +46,7 @@ async function loadBranding() {
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await loadBranding();
+  const chrome = chromeThemeColor(branding);
   // Favicon / PWA home-screen icons use the Kings Bakamuna logo
   // (`public/logo-kings-bakamuna.png` → `public/icons/icon-*.png` + manifest).
   const icon = branding.favicon_url || branding.logo_url;
@@ -52,8 +59,11 @@ export async function generateMetadata(): Promise<Metadata> {
     applicationName: branding.name,
     appleWebApp: {
       capable: true,
-      statusBarStyle: "black-translucent",
+      statusBarStyle: appleStatusBarStyle(chrome),
       title: branding.name,
+    },
+    other: {
+      "theme-color": chrome,
     },
     icons: icon
       ? {
@@ -82,7 +92,7 @@ export async function generateViewport(): Promise<Viewport> {
       { media: "(prefers-color-scheme: light)", color: theme },
       { media: "(prefers-color-scheme: dark)", color: theme },
     ],
-    colorScheme: "dark",
+    colorScheme: chromeIsDark(theme) ? "dark" : "light",
     width: "device-width",
     initialScale: 1,
     maximumScale: 1,
@@ -102,11 +112,13 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${leagueSpartan.variable} ${geistMono.variable} h-full antialiased`}
+      style={{ backgroundColor: chrome }}
     >
       <body
-        className="flex min-h-full flex-col font-sans text-white"
+        className={`flex min-h-full flex-col font-sans ${chromeIsDark(chrome) ? "text-white" : "text-neutral-900"}`}
         style={{ backgroundColor: chrome }}
       >
+        <ThemeColorSync color={chrome} />
         <SerwistProvider
           swUrl="/sw.js"
           disable={process.env.NODE_ENV === "development"}

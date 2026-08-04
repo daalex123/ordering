@@ -49,6 +49,7 @@ export function brandingStyleVars(branding: Branding): CSSProperties {
     ["--glass-accent" as string]: branding.primary_color,
     // Keep kit yellow as the header accent; primary brand color drives CTAs/nav.
     ["--yum-peach" as string]: branding.surface_color,
+    ["--theme-color" as string]: chromeThemeColor(branding),
   };
 }
 
@@ -77,13 +78,27 @@ function hexLuminance(hex: string): number {
 
 /**
  * Status bar / PWA chrome color from restaurant branding.
- * Uses `background_color` when it's a valid dark hex; otherwise glass dark.
- * (Skips legacy light backgrounds like #F5F5F5 so the glass UI stays coherent.)
+ * Always uses admin `background_color` when valid — do not force dark fallback
+ * (that kept the OS bar black even when Background was set to white/brand).
  */
 export function chromeThemeColor(branding: Branding): string {
   const bg = branding.background_color?.trim();
-  if (bg && isValidHexColor(bg) && hexLuminance(bg) < 0.35) {
+  if (bg && isValidHexColor(bg)) {
     return expandHex(bg);
   }
   return DEFAULT_BRANDING.background_color;
+}
+
+export function chromeIsDark(color: string): boolean {
+  if (!isValidHexColor(color)) return true;
+  return hexLuminance(color) < 0.45;
+}
+
+/** iOS apple-mobile-web-app-status-bar-style for the given chrome color. */
+export function appleStatusBarStyle(
+  color: string,
+): "default" | "black" | "black-translucent" {
+  // Light chrome: opaque system bar (theme-color / white). Translucent over a
+  // dark glass page would still look black even when theme-color is light.
+  return chromeIsDark(color) ? "black-translucent" : "default";
 }

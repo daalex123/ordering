@@ -248,7 +248,7 @@ export function BrandingSettingsForm({
           onChange={(v) => setField("accent_color", v)}
         />
         <ColorField
-          label="Background"
+          label="Background (status bar)"
           value={form.background_color}
           onChange={(v) => setField("background_color", v)}
         />
